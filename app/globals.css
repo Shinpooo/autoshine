@@ -170,24 +170,6 @@ a {
   color: #ffffff;
 }
 
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background: #ffffff;
-  opacity: 0;
-  transform: scaleX(0.4);
-  transform-origin: left;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.nav-links a.active::after {
-  opacity: 1;
-  transform: scaleX(1);
-}
 
 .btn {
   display: inline-flex;
