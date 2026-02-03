@@ -1,7 +1,7 @@
 import Image from "next/image";
-import BeforeAfter from "./components/BeforeAfter";
 import Header from "./components/Header";
 import ServiceMapClient from "./components/ServiceMapClient";
+import BeforeAfter from "./components/BeforeAfter";
 
 const packs = [
   {
@@ -93,6 +93,7 @@ export default function Home() {
           <div className="hero-media">
             <video
               className="hero-video"
+              id="hero-video"
               src="/images/videobg.mp4"
               autoPlay
               muted
@@ -104,14 +105,14 @@ export default function Home() {
           </div>
           <div className="container hero-content">
             <div className="fade-up">
-              <p className="eyebrow">Detailing automobile premium</p>
+              <p className="eyebrow hide-mobile">Detailing automobile premium</p>
               <h1 className="hero-title">Redonner l'éclat d'origine</h1>
               <p className="hero-text">
                 Un soin précis et professionnel pour sublimer chaque détail de
                 votre véhicule.
               </p>
               <div className="hero-actions">
-                <button className="btn" type="button">
+                <button className="btn hide-mobile" type="button">
                   Prendre rendez-vous
                 </button>
                 <a className="btn btn-ghost" href="#packs">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import StartupLoader from "./components/StartupLoader";
 
 export const metadata: Metadata = {
   title: "LN AutoShine | Detailing automobile haut de gamme à domicile",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <StartupLoader />
+        {children}
+      </body>
     </html>
   );
 }

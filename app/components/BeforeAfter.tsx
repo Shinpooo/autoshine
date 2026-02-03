@@ -7,10 +7,7 @@ export default function BeforeAfter() {
   const [position, setPosition] = useState(33);
 
   return (
-    <div
-      className="ba"
-      style={{ "--pos": `${position}%` } as CSSProperties}
-    >
+    <div className="ba" style={{ "--pos": `${position}%` } as CSSProperties}>
       <div className="ba-image">
         <Image
           src="/images/after-clean-v2.jpg"
