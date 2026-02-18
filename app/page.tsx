@@ -2,6 +2,9 @@ import Image from "next/image";
 import Header from "./components/Header";
 import ServiceMapClient from "./components/ServiceMapClient";
 import BeforeAfter from "./components/BeforeAfter";
+import TestimonialsSection from "./components/TestimonialsSection";
+import BookingDrawer from "./components/BookingDrawer";
+import HeroVideo from "./components/HeroVideo";
 
 const packs = [
   {
@@ -64,25 +67,6 @@ const why = [
   "Approche personnalisée",
 ];
 
-const testimonials = [
-  {
-    quote: "Intérieur impeccable, plus aucune poussière. Service au top.",
-    name: "Julie M.",
-  },
-  {
-    quote: "Pack Premium idéal avant une revente. Résultat bluffant.",
-    name: "Marc D.",
-  },
-  {
-    quote: "Travail minutieux, ponctuel, très pro. Je recommande.",
-    name: "Sarah L.",
-  },
-  {
-    quote: "Voiture comme neuve. Finitions parfaites.",
-    name: "Thomas R.",
-  },
-];
-
 export default function Home() {
   return (
     <div className="page">
@@ -91,28 +75,18 @@ export default function Home() {
       <main>
         <section className="hero" id="top">
           <div className="hero-media">
-            <video
-              className="hero-video"
-              id="hero-video"
-              src="/images/videobg.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              poster="/images/hero-pexels.jpg"
-            />
+            <HeroVideo />
           </div>
           <div className="container hero-content">
             <div className="fade-up">
-              <p className="eyebrow hide-mobile">Detailing automobile premium</p>
+              <p className="eyebrow hide-mobile">Detailing automobile à domicile</p>
               <h1 className="hero-title">Redonner l'éclat d'origine</h1>
               <p className="hero-text">
                 Un soin précis et professionnel pour sublimer chaque détail de
                 votre véhicule.
               </p>
               <div className="hero-actions">
-                <button className="btn hide-mobile" type="button">
+                <button className="btn hide-mobile" type="button" data-open-booking>
                   Prendre rendez-vous
                 </button>
                 <a className="btn btn-ghost" href="#packs">
@@ -241,32 +215,14 @@ export default function Home() {
           </div>
         </section> */}
 
-        <section className="section" id="temoignages">
-          <div className="container">
-            <p className="eyebrow">Ils nous font confiance</p>
-            <h2 className="section-title">Témoignages</h2>
-            <p className="section-subtitle">
-              Des clients satisfaits par la précision, la discrétion et la
-              qualité du résultat.
-            </p>
-            <div className="testimonials-grid">
-              {testimonials.map((item) => (
-                <div key={item.name} className="testimonial-card">
-                  <strong>★★★★★</strong>
-                  <p>{item.quote}</p>
-                  <span>{item.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <TestimonialsSection />
 
         <section className="section" id="zone">
           <div className="container">
             <p className="eyebrow">Zone d'intervention</p>
-            <h2 className="section-title">Liège & alentours</h2>
-            <p className="section-subtitle">
-              Nous intervenons dans un rayon de 20 km autour de Liège.
+            <h2 className="section-title">Huy & alentours</h2>
+            <p className="section-subtitle zone-subtitle-one-line">
+              Nous intervenons sans frais supplémentaires dans un rayon de 20 km autour de Huy.
             </p>
             <div style={{ height: 20 }} />
             <ServiceMapClient />
@@ -287,8 +243,8 @@ export default function Home() {
           </div>
           <div>
             <strong>Zone</strong>
-            <small>Liège, Belgique</small>
-            <small>Rayon 30 km</small>
+            <small>Huy, Belgique</small>
+            <small>Rayon 20 km</small>
           </div>
           <div>
             <strong>Réseaux</strong>
@@ -297,6 +253,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <BookingDrawer />
     </div>
   );
 }

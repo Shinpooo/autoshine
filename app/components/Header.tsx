@@ -31,7 +31,7 @@ export default function Header() {
             </a>
           ))}
         </nav>
-        <button className="btn" type="button">
+        <button className="btn" type="button" data-open-booking>
           Prendre rendez-vous
         </button>
       </div>
