@@ -309,6 +309,8 @@ body.booking-open {
   top: 0;
   width: min(560px, 100vw);
   height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
   background: rgba(7, 7, 7, 0.98);
   border-left: 1px solid rgba(245, 245, 245, 0.14);
   transform: translateX(100%);
@@ -413,7 +415,13 @@ body.booking-open {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 .booking-fields {
@@ -788,6 +796,16 @@ body.booking-open {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 7, 7, 0) 0%,
+    rgba(7, 7, 7, 0.96) 24%,
+    rgba(7, 7, 7, 0.98) 100%
+  );
+  padding-top: 14px;
 }
 
 .booking-btn {
@@ -1022,9 +1040,12 @@ body.booking-open {
   top: 0;
   bottom: 0;
   left: var(--pos, 50%);
-  width: 6px;
-  background: #000000;
-  box-shadow: none;
+  width: 8px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
 }
 
 .ba-handle::after {
@@ -1032,25 +1053,45 @@ body.booking-open {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 22px;
-  height: 22px;
-  border-radius: 0;
-  border: 3px solid #000000;
-  background: #ffffff;
-  transform: translate(-50%, -50%) rotate(45deg);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  width: 74px;
+  height: 74px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  transform: translate(-50%, -50%);
 }
 
 .ba-handle::before {
-  content: "< >";
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: #ffffff;
   transform: translate(-50%, -50%);
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  color: #000000;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.ba-grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 36px;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.ba-grip span {
+  width: 4px;
+  height: 20px;
+  border-radius: 999px;
+  background: #a9ad66;
 }
 
 .ba-range {
@@ -1327,6 +1368,7 @@ body.booking-open {
 
   .booking-form {
     padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
 
   .booking-calendar {

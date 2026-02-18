@@ -26,7 +26,13 @@ export default function BeforeAfter() {
           style={{ objectFit: "cover" }}
         />
       </div>
-      <div className="ba-handle" aria-hidden="true" />
+      <div className="ba-handle" aria-hidden="true">
+        <span className="ba-grip">
+          <span />
+          <span />
+          <span />
+        </span>
+      </div>
       <input
         className="ba-range"
         type="range"
