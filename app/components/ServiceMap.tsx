@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Circle, useMap } from "react-leaflet";
 import { latLng } from "leaflet";
 
-const center: [number, number] = [50.51888, 5.2408];
+const center: [number, number] = [50.5483, 5.3098];
 const radiusMeters = 20000;
 
 function FitCircleBounds() {
@@ -38,10 +38,10 @@ export default function ServiceMap() {
         <Circle
           center={center}
           radius={radiusMeters}
-          pathOptions={{ color: "#F5F5F5", fillColor: "#F5F5F5", fillOpacity: 0.12 }}
+          pathOptions={{ color: "#747b86", fillColor: "#747b86", fillOpacity: 0.18 }}
         />
       </MapContainer>
-      <div className="map-label">Rayon 20 km autour de Huy</div>
+      <div className="map-label">Liège, Huy & alentours - rayon 20 km</div>
     </div>
   );
 }

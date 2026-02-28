@@ -220,9 +220,9 @@ export default function Home() {
         <section className="section" id="zone">
           <div className="container">
             <p className="eyebrow">Zone d'intervention</p>
-            <h2 className="section-title">Huy & alentours</h2>
+            <h2 className="section-title">Liège, Huy & alentours</h2>
             <p className="section-subtitle zone-subtitle-one-line">
-              Nous intervenons sans frais supplémentaires dans un rayon de 20 km autour de Huy.
+              Nous intervenons sans frais supplémentaires dans un rayon de 20 km autour d'Amay.
             </p>
             <div style={{ height: 20 }} />
             <ServiceMapClient />
@@ -238,18 +238,26 @@ export default function Home() {
           </div>
           <div>
             <strong>Contact</strong>
-            <small>+32 XX XXX XX XX</small>
-            <small>contact@lnautoshine.be</small>
+            <small>+32 493 08 43 31</small>
+            <small>lnautoshine@gmail.com</small>
           </div>
           <div>
             <strong>Zone</strong>
-            <small>Huy, Belgique</small>
-            <small>Rayon 20 km</small>
+            <small>Entre Liège et Huy</small>
+            <small>Rayon de 20 km</small>
           </div>
           <div>
             <strong>Réseaux</strong>
-            <small>Instagram (placeholder)</small>
-            <small>Facebook (placeholder)</small>
+            <small>
+              <a href="https://www.instagram.com/ln_autoshine/" target="_blank" rel="noreferrer">
+                Instagram
+              </a>
+            </small>
+            <small>
+              <a href="https://linktr.ee/lnautoshine" target="_blank" rel="noreferrer">
+                Linktree
+              </a>
+            </small>
           </div>
         </div>
       </footer>

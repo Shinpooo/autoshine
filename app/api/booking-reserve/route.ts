@@ -10,6 +10,8 @@ const TRANSIT_BUFFER_MINUTES = 60;
 type ReservePayload = {
   pack: string;
   vehicleModel: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   email: string;
   address: string;
@@ -41,6 +43,8 @@ async function sendReservationEmail(args: {
   to: string;
   pack: string;
   vehicleModel: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   address: string;
   houseNumber: string;
@@ -92,6 +96,7 @@ async function sendReservationEmail(args: {
     <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111">
       <h2>Votre demande de réservation LN AutoShine</h2>
       <p>Nous avons bien reçu votre demande.</p>
+      <p><strong>Nom :</strong> ${args.firstName} ${args.lastName}</p>
       <p><strong>Date et heure :</strong> ${dateText}</p>
       <p><strong>Pack :</strong> ${args.pack}</p>
       <p><strong>Véhicule :</strong> ${args.vehicleModel}</p>
@@ -187,6 +192,8 @@ export async function POST(request: Request) {
     if (
       !required(body.pack) ||
       !required(body.vehicleModel) ||
+      !required(body.firstName) ||
+      !required(body.lastName) ||
       !required(body.phone) ||
       !required(body.email) ||
       !required(body.address) ||
@@ -250,6 +257,7 @@ export async function POST(request: Request) {
           description: [
             `Pack: ${body.pack}`,
             `Véhicule: ${body.vehicleModel}`,
+            `Client: ${body.firstName} ${body.lastName}`,
             `Téléphone: ${body.phone}`,
             `Email: ${body.email}`,
             `Adresse: ${body.address} ${body.houseNumber}`,
@@ -291,6 +299,8 @@ export async function POST(request: Request) {
       to: body.email,
       pack: body.pack,
       vehicleModel: body.vehicleModel,
+      firstName: body.firstName,
+      lastName: body.lastName,
       phone: body.phone,
       address: body.address,
       houseNumber: body.houseNumber,

@@ -5,6 +5,8 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 type BookingForm = {
   pack: string;
   vehicleModel: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   email: string;
   address: string;
@@ -39,6 +41,8 @@ type AvailabilityDay = {
 const initialForm: BookingForm = {
   pack: "",
   vehicleModel: "",
+  firstName: "",
+  lastName: "",
   phone: "",
   email: "",
   address: "",
@@ -54,6 +58,7 @@ const packOptions = [
     name: "Pack Essentiel",
     description: "Entretien régulier pour garder un véhicule propre au quotidien.",
     duration: "1h - 1h30",
+    price: "65 €",
     details: [
       "Aspiration intérieure légère",
       "Lavage extérieur complet à la main",
@@ -67,6 +72,7 @@ const packOptions = [
     name: "Pack Confort",
     description: "Nettoyage complet intérieur/extérieur avec finitions soignées.",
     duration: "2h - 2h30",
+    price: "99 €",
     details: [
       "Aspiration intérieure complète",
       "Nettoyage des plastiques intérieurs",
@@ -82,6 +88,7 @@ const packOptions = [
     name: "Pack Premium",
     description: "Remise en état approfondie et finitions haut de gamme.",
     duration: "3h - 4h",
+    price: "145 €",
     details: [
       "Toutes les prestations du Pack Confort",
       "Shampoing des sièges et tapis",
@@ -101,6 +108,7 @@ export default function BookingDrawer() {
   const [isSuggestLoading, setIsSuggestLoading] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [availabilityDays, setAvailabilityDays] = useState<AvailabilityDay[]>([]);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
@@ -109,6 +117,16 @@ export default function BookingDrawer() {
   const [bookingError, setBookingError] = useState("");
   const [bookingSuccess, setBookingSuccess] = useState("");
   const debounceRef = useRef<number | null>(null);
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+
+  const sanitizePhone = (value: string) => {
+    const stripped = value.replace(/[^\d+]/g, "");
+    if (!stripped) return "";
+    if (stripped.startsWith("+")) {
+      return `+${stripped.slice(1).replace(/\+/g, "")}`;
+    }
+    return stripped.replace(/\+/g, "");
+  };
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -142,8 +160,11 @@ export default function BookingDrawer() {
     if (step === 1) return Boolean(form.pack);
     if (step === 2) {
       return Boolean(
+        form.firstName.trim() &&
+          form.lastName.trim() &&
         form.phone.trim() &&
           form.email.trim() &&
+          isEmailValid &&
           form.address.trim() &&
           form.houseNumber.trim() &&
           selectedAddress
@@ -151,7 +172,7 @@ export default function BookingDrawer() {
     }
     if (step === 3) return Boolean(form.date && form.timeSlot);
     return true;
-  }, [form, step]);
+  }, [form, isEmailValid, step]);
 
   const closeDrawer = () => {
     setIsOpen(false);
@@ -164,6 +185,7 @@ export default function BookingDrawer() {
     setAvailabilityLoading(false);
     setAvailabilityError("");
     setExpandedPack(null);
+    setIsEmailFocused(false);
     setBookingLoading(false);
     setBookingError("");
     setBookingSuccess("");
@@ -407,15 +429,23 @@ export default function BookingDrawer() {
                         >
                           <strong>{pack.name}</strong>
                           <p>{pack.description}</p>
+                          <small>Prix: {pack.price}</small>
                           <small>Durée: {pack.duration}</small>
                         </button>
 
                         <button
                           type="button"
                           className={`booking-pack-more${isExpanded ? " is-open" : ""}`}
-                          onClick={() =>
-                            setExpandedPack((prev) => (prev === pack.name ? null : pack.name))
-                          }
+                          onClick={() => {
+                            setForm((prev) => ({
+                              ...prev,
+                              pack: pack.name,
+                              date: "",
+                              timeSlot: "",
+                              timeSlotLabel: "",
+                            }));
+                            setExpandedPack((prev) => (prev === pack.name ? null : pack.name));
+                          }}
                           aria-expanded={isExpanded}
                         >
                           {isExpanded ? "− Moins d'info" : "+ d'info"}
@@ -436,6 +466,16 @@ export default function BookingDrawer() {
                     );
                   })}
                 </div>
+                <p className="booking-pack-help">
+                  Vous avez un doute ?{" "}
+                  <a
+                    href="https://api.whatsapp.com/send/?phone=32493084331&text&type=phone_number&app_absent=0"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Contactez-nous sur WhatsApp
+                  </a>
+                </p>
               </div>
             </div>
           )}
@@ -443,12 +483,34 @@ export default function BookingDrawer() {
           {step === 2 && (
             <div className="booking-fields">
               <label>
+                Prénom
+                <input
+                  type="text"
+                  placeholder="Prénom"
+                  value={form.firstName}
+                  onChange={(e) => updateField("firstName", e.target.value)}
+                />
+              </label>
+
+              <label>
+                Nom
+                <input
+                  type="text"
+                  placeholder="Nom"
+                  value={form.lastName}
+                  onChange={(e) => updateField("lastName", e.target.value)}
+                />
+              </label>
+
+              <label>
                 Téléphone
                 <input
                   type="tel"
-                  placeholder="+32 ..."
+                  placeholder="04 ..."
+                  inputMode="tel"
+                  pattern="^\+?\d+$"
                   value={form.phone}
-                  onChange={(e) => updateField("phone", e.target.value)}
+                  onChange={(e) => updateField("phone", sanitizePhone(e.target.value))}
                 />
               </label>
 
@@ -458,9 +520,16 @@ export default function BookingDrawer() {
                   type="email"
                   placeholder="vous@email.com"
                   value={form.email}
+                  onFocus={() => setIsEmailFocused(true)}
+                  onBlur={() => setIsEmailFocused(false)}
                   onChange={(e) => updateField("email", e.target.value)}
                 />
               </label>
+              {!isEmailFocused && form.email.trim().length > 0 && !isEmailValid && (
+                <div className="booking-zone-warning">
+                  Email invalide (format attendu: nom@domaine.com)
+                </div>
+              )}
 
               <label>
                 Adresse de la prestation
@@ -515,18 +584,6 @@ export default function BookingDrawer() {
                   onChange={(e) => updateField("houseNumber", e.target.value)}
                 />
               </label>
-
-              {selectedAddress && (
-                <div
-                  className={`booking-zone-status${
-                    selectedAddress.inZone ? " is-in-zone" : " is-out-zone"
-                  }`}
-                >
-                  {selectedAddress.inZone
-                    ? `Dans la zone (${selectedAddress.distanceKm} km) - pas de supplément`
-                    : `Hors zone (${selectedAddress.distanceKm} km) - supplément demandé`}
-                </div>
-              )}
 
               {!selectedAddress && form.address.trim().length >= 3 && (
                 <div className="booking-zone-warning">
@@ -627,10 +684,6 @@ export default function BookingDrawer() {
                   )}
                 </div>
               </div>
-
-              <div className="booking-note">
-                Seuls les créneaux actuellement libres dans Google Agenda sont proposés.
-              </div>
             </div>
           )}
 
@@ -642,6 +695,9 @@ export default function BookingDrawer() {
               </p>
               <p>
                 <strong>Véhicule:</strong> {form.vehicleModel}
+              </p>
+              <p>
+                <strong>Client:</strong> {form.firstName} {form.lastName}
               </p>
               <p>
                 <strong>Téléphone:</strong> {form.phone}
