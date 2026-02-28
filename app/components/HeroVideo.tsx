@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const HERO_VIDEOS = [
   "/images/videobg.mp4",
@@ -11,12 +11,9 @@ const HERO_VIDEOS = [
 ];
 
 export default function HeroVideo() {
-  const [src, setSrc] = useState("/images/videobg.mp4");
-
-  useEffect(() => {
-    const index = Math.floor(Math.random() * HERO_VIDEOS.length);
-    setSrc(HERO_VIDEOS[index]);
-  }, []);
+  const [src] = useState(
+    () => HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)]
+  );
 
   return (
     <video
@@ -29,7 +26,7 @@ export default function HeroVideo() {
       loop
       playsInline
       preload="auto"
-      poster="/images/hero-pexels.jpg"
+      poster="/images/pexels-lynxexotics.jpg"
     />
   );
 }
