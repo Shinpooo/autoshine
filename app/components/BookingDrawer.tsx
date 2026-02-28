@@ -6,6 +6,7 @@ type BookingForm = {
   pack: string;
   vehicleModel: string;
   phone: string;
+  email: string;
   address: string;
   houseNumber: string;
   date: string;
@@ -39,6 +40,7 @@ const initialForm: BookingForm = {
   pack: "",
   vehicleModel: "",
   phone: "",
+  email: "",
   address: "",
   houseNumber: "",
   date: "",
@@ -136,16 +138,18 @@ export default function BookingDrawer() {
   }, [isOpen]);
 
   const canGoNext = useMemo(() => {
-    if (step === 0) return Boolean(form.pack && form.vehicleModel.trim());
-    if (step === 1) {
+    if (step === 0) return Boolean(form.vehicleModel.trim());
+    if (step === 1) return Boolean(form.pack);
+    if (step === 2) {
       return Boolean(
         form.phone.trim() &&
+          form.email.trim() &&
           form.address.trim() &&
           form.houseNumber.trim() &&
           selectedAddress
       );
     }
-    if (step === 2) return Boolean(form.date && form.timeSlot);
+    if (step === 3) return Boolean(form.date && form.timeSlot);
     return true;
   }, [form, step]);
 
@@ -167,7 +171,7 @@ export default function BookingDrawer() {
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (step < 3) {
+    if (step < 4) {
       if (canGoNext) {
         setBookingError("");
         setStep((prev) => prev + 1);
@@ -203,7 +207,7 @@ export default function BookingDrawer() {
   };
 
   useEffect(() => {
-    if (!isOpen || step !== 2 || !form.pack) return;
+    if (!isOpen || step !== 3 || !form.pack) return;
 
     const controller = new AbortController();
 
@@ -262,7 +266,7 @@ export default function BookingDrawer() {
   );
 
   useEffect(() => {
-    if (!isOpen || step !== 1) return;
+    if (!isOpen || step !== 2) return;
 
     const query = form.address.trim();
     if (query.length < 3) {
@@ -296,7 +300,7 @@ export default function BookingDrawer() {
   }, [form.address, isOpen, step]);
 
   useEffect(() => {
-    if (!isOpen || step !== 0 || !expandedPack) return;
+    if (!isOpen || step !== 1 || !expandedPack) return;
 
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
@@ -330,7 +334,7 @@ export default function BookingDrawer() {
             type="button"
             className="booking-back-top"
             onClick={() => setStep((prev) => Math.max(prev - 1, 0))}
-            disabled={step === 0}
+            disabled={step === 0 || Boolean(bookingSuccess)}
             aria-label="Étape précédente"
           >
             ←
@@ -346,12 +350,14 @@ export default function BookingDrawer() {
         </div>
 
         <div className="booking-steps" aria-hidden>
-          {["Service", "Contact", "Créneau", "Validation"].map((label, index) => (
+          {["Véhicule", "Service", "Contact", "Créneau", "Validation"].map(
+            (label, index) => (
             <div key={label} className={`booking-step${index <= step ? " is-active" : ""}`}>
               <span>{index + 1}</span>
               <small>{label}</small>
             </div>
-          ))}
+          )
+          )}
         </div>
 
         <form className="booking-form" onSubmit={onSubmit}>
@@ -366,7 +372,11 @@ export default function BookingDrawer() {
                   onChange={(e) => updateField("vehicleModel", e.target.value)}
                 />
               </label>
+            </div>
+          )}
 
+          {step === 1 && (
+            <div className="booking-fields">
               <div className="booking-pack-group">
                 <span>Choix du pack</span>
                 <div className="booking-pack-grid">
@@ -430,7 +440,7 @@ export default function BookingDrawer() {
             </div>
           )}
 
-          {step === 1 && (
+          {step === 2 && (
             <div className="booking-fields">
               <label>
                 Téléphone
@@ -439,6 +449,16 @@ export default function BookingDrawer() {
                   placeholder="+32 ..."
                   value={form.phone}
                   onChange={(e) => updateField("phone", e.target.value)}
+                />
+              </label>
+
+              <label>
+                Email
+                <input
+                  type="email"
+                  placeholder="vous@email.com"
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
                 />
               </label>
 
@@ -526,7 +546,7 @@ export default function BookingDrawer() {
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="booking-fields">
               <div className="booking-calendar">
                 <div className="booking-calendar-days">
@@ -614,7 +634,7 @@ export default function BookingDrawer() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="booking-fields booking-summary">
               <h4>Résumé de la demande</h4>
               <p>
@@ -625,6 +645,9 @@ export default function BookingDrawer() {
               </p>
               <p>
                 <strong>Téléphone:</strong> {form.phone}
+              </p>
+              <p>
+                <strong>Email:</strong> {form.email}
               </p>
               <p>
                 <strong>Adresse:</strong> {form.address}
@@ -645,7 +668,7 @@ export default function BookingDrawer() {
               type="button"
               className="booking-btn booking-btn--ghost"
               onClick={() => setStep((prev) => Math.max(prev - 1, 0))}
-              disabled={step === 0 || bookingLoading}
+              disabled={step === 0 || bookingLoading || Boolean(bookingSuccess)}
             >
               Retour
             </button>
@@ -653,9 +676,9 @@ export default function BookingDrawer() {
             <button
               type="submit"
               className="booking-btn"
-              disabled={bookingLoading || Boolean(bookingSuccess) || (step < 3 && !canGoNext)}
+              disabled={bookingLoading || Boolean(bookingSuccess) || (step < 4 && !canGoNext)}
             >
-              {step < 3
+              {step < 4
                 ? "Continuer"
                 : bookingLoading
                   ? "Confirmation..."

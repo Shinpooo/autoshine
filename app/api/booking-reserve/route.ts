@@ -1,5 +1,6 @@
 import { getPackConfig, isBookablePack } from "@/app/lib/booking";
 import { getGoogleAccessToken, loadGoogleCredentials } from "@/app/lib/googleAuth";
+import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 
 const TIME_ZONE = "Europe/Brussels";
@@ -10,6 +11,7 @@ type ReservePayload = {
   pack: string;
   vehicleModel: string;
   phone: string;
+  email: string;
   address: string;
   houseNumber: string;
   date: string;
@@ -21,6 +23,114 @@ type ReservePayload = {
 type GoogleFreeBusyResponse = {
   calendars?: Record<string, { busy?: Array<{ start: string; end: string }> }>;
 };
+
+function formatDateTime(date: Date): string {
+  return new Intl.DateTimeFormat("fr-BE", {
+    timeZone: TIME_ZONE,
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+async function sendReservationEmail(args: {
+  to: string;
+  pack: string;
+  vehicleModel: string;
+  phone: string;
+  address: string;
+  houseNumber: string;
+  notes?: string;
+  startIso: string;
+  endIso: string;
+}) {
+  const smtpUser = (process.env.GMAIL_SMTP_USER || "").trim();
+  const smtpAppPassword = (process.env.GMAIL_SMTP_APP_PASSWORD || "").trim();
+  const fromEmail = (process.env.BOOKING_FROM_EMAIL || smtpUser).trim();
+  if (!smtpUser || !smtpAppPassword || !fromEmail) {
+    return { sent: false as const, reason: "missing_config" };
+  }
+
+  const eventUid = `booking-${Date.now()}-${Math.random().toString(36).slice(2, 10)}@lnautoshine`;
+  const toIcsUtc = (value: string) =>
+    new Date(value).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const escapeIcsText = (input: string) =>
+    input
+      .replace(/\\/g, "\\\\")
+      .replace(/\n/g, "\\n")
+      .replace(/,/g, "\\,")
+      .replace(/;/g, "\\;");
+
+  const dateText = formatDateTime(new Date(args.startIso));
+  const notesLine = args.notes?.trim()
+    ? `<p><strong>Informations complémentaires :</strong> ${args.notes.trim()}</p>`
+    : "";
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//LN AutoShine//Reservation//FR",
+    "CALSCALE:GREGORIAN",
+    "METHOD:REQUEST",
+    "BEGIN:VEVENT",
+    `UID:${eventUid}`,
+    `DTSTAMP:${toIcsUtc(new Date().toISOString())}`,
+    `DTSTART:${toIcsUtc(args.startIso)}`,
+    `DTEND:${toIcsUtc(args.endIso)}`,
+    `SUMMARY:${escapeIcsText(`LN AutoShine - ${args.pack}`)}`,
+    `DESCRIPTION:${escapeIcsText("Demande de réservation LN AutoShine")}`,
+    `LOCATION:${escapeIcsText(`${args.address} ${args.houseNumber}`)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111">
+      <h2>Votre demande de réservation LN AutoShine</h2>
+      <p>Nous avons bien reçu votre demande.</p>
+      <p><strong>Date et heure :</strong> ${dateText}</p>
+      <p><strong>Pack :</strong> ${args.pack}</p>
+      <p><strong>Véhicule :</strong> ${args.vehicleModel}</p>
+      <p><strong>Adresse :</strong> ${args.address} ${args.houseNumber}</p>
+      <p><strong>Téléphone :</strong> ${args.phone}</p>
+      ${notesLine}
+      <p>Un fichier calendrier (.ics) est joint à cet email.</p>
+    </div>
+  `;
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: smtpUser,
+      pass: smtpAppPassword,
+    },
+  });
+
+  try {
+    await transporter.sendMail({
+      from: fromEmail,
+      to: args.to,
+      subject: "LN AutoShine - Confirmation de votre demande",
+      html,
+      text: `Réservation reçue.\nDate: ${dateText}\nPack: ${args.pack}\nVéhicule: ${args.vehicleModel}\nAdresse: ${args.address} ${args.houseNumber}`,
+      attachments: [
+        {
+          filename: "reservation-lnautoshine.ics",
+          content: icsContent,
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+        },
+      ],
+    });
+    return { sent: true as const };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "send_failed";
+    return { sent: false as const, reason };
+  }
+}
 
 function required(value: string | undefined | null) {
   return Boolean(value && value.trim());
@@ -78,6 +188,7 @@ export async function POST(request: Request) {
       !required(body.pack) ||
       !required(body.vehicleModel) ||
       !required(body.phone) ||
+      !required(body.email) ||
       !required(body.address) ||
       !required(body.houseNumber) ||
       !required(body.timeSlot)
@@ -140,6 +251,7 @@ export async function POST(request: Request) {
             `Pack: ${body.pack}`,
             `Véhicule: ${body.vehicleModel}`,
             `Téléphone: ${body.phone}`,
+            `Email: ${body.email}`,
             `Adresse: ${body.address} ${body.houseNumber}`,
             body.notes?.trim()
               ? `Informations complémentaires: ${body.notes.trim()}`
@@ -175,9 +287,23 @@ export async function POST(request: Request) {
       );
     }
 
+    const emailResult = await sendReservationEmail({
+      to: body.email,
+      pack: body.pack,
+      vehicleModel: body.vehicleModel,
+      phone: body.phone,
+      address: body.address,
+      houseNumber: body.houseNumber,
+      notes: body.notes,
+      startIso: start.toISOString(),
+      endIso: end.toISOString(),
+    });
+
     return NextResponse.json({
       ok: true,
-      message: "Réservation envoyée. Vous recevrez une confirmation rapidement.",
+      message: emailResult.sent
+        ? "Réservation envoyée. Un email de confirmation vient d'être envoyé."
+        : "Réservation envoyée. L'email de confirmation n'a pas pu être envoyé pour le moment.",
     });
   } catch {
     return NextResponse.json(

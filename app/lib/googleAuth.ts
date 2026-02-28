@@ -1,16 +1,9 @@
 import { createSign } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 export type GoogleCredentials = {
   serviceEmail: string;
   privateKey: string;
   calendarId: string;
-};
-
-type ServiceAccountFile = {
-  client_email?: string;
-  private_key?: string;
 };
 
 type GoogleTokenResponse = {
@@ -61,33 +54,6 @@ export async function loadGoogleCredentials(): Promise<GoogleCredentials | null>
       privateKey: envKey,
       calendarId,
     };
-  }
-
-  const explicitJsonPath = (process.env.GOOGLE_SERVICE_ACCOUNT_JSON_PATH || "").trim();
-  const candidatePaths = [
-    explicitJsonPath,
-    "autoshine-486820-75698831dde5.json",
-    "service-account.json",
-    "google-service-account.json",
-  ].filter(Boolean);
-
-  for (const candidate of candidatePaths) {
-    const absolute = path.isAbsolute(candidate)
-      ? candidate
-      : path.join(process.cwd(), candidate);
-    try {
-      const raw = await readFile(absolute, "utf-8");
-      const parsed = JSON.parse(raw) as ServiceAccountFile;
-      if (parsed.client_email && parsed.private_key) {
-        return {
-          serviceEmail: parsed.client_email,
-          privateKey: parsed.private_key,
-          calendarId,
-        };
-      }
-    } catch {
-      // Try next candidate path.
-    }
   }
 
   return null;
