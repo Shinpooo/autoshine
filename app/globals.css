@@ -204,6 +204,7 @@ a {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .nav-links {
@@ -239,6 +240,7 @@ a {
   font-size: 0.9rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  white-space: nowrap;
   transition: box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 18px 44px rgba(255, 255, 255, 0.24);
 }
@@ -1351,6 +1353,26 @@ body.booking-open {
 }
 
 @media (max-width: 600px) {
+  .nav-inner {
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .brand {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+  }
+
+  .nav .btn {
+    padding: 9px 10px;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+  }
+
+  .nav .btn::after {
+    display: none;
+  }
+
   .section {
     padding: 80px 0;
   }
@@ -1374,7 +1396,25 @@ body.booking-open {
 
   .booking-steps {
     padding: 12px 16px;
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .booking-step {
+    padding: 9px 6px;
+    min-width: 0;
+  }
+
+  .booking-step span {
+    font-size: 0.72rem;
+  }
+
+  .booking-step small {
+    font-size: 0.5rem;
+    letter-spacing: 0.03em;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .booking-form {
@@ -1383,6 +1423,37 @@ body.booking-open {
   }
 
   .booking-calendar {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 8px;
+  }
+
+  .booking-calendar-days,
+  .booking-calendar-slots {
+    min-height: 300px;
+    max-height: 52dvh;
+    padding: 8px;
+  }
+
+  .booking-calendar-title {
+    font-size: 0.64rem;
+    letter-spacing: 0.04em;
+  }
+
+  .booking-day-item,
+  .booking-slot-item {
+    padding: 8px;
+  }
+
+  .booking-day-item span {
+    font-size: 0.74rem;
+  }
+
+  .booking-day-item small {
+    font-size: 0.66rem;
+  }
+
+  .booking-slot-item {
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
   }
 }
