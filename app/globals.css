@@ -450,6 +450,8 @@ body.booking-open {
   min-height: 0;
   padding-right: 2px;
   -webkit-overflow-scrolling: touch;
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 
 .booking-fields label {
@@ -457,6 +459,7 @@ body.booking-open {
   gap: 8px;
   color: var(--muted);
   font-size: 0.9rem;
+  align-self: start;
 }
 
 .booking-pack-group {
