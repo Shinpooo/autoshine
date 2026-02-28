@@ -305,6 +305,11 @@ body.booking-open {
   pointer-events: auto;
 }
 
+.booking-page {
+  min-height: 100dvh;
+  background: #000000;
+}
+
 .booking-panel {
   position: fixed;
   right: 0;
@@ -324,6 +329,17 @@ body.booking-open {
 
 .booking-panel.is-open {
   transform: translateX(0);
+}
+
+.booking-panel--page {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  transform: none;
+  border-left: none;
+  background: #070707;
 }
 
 .booking-panel__header {

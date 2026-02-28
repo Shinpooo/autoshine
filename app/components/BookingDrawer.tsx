@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 type BookingForm = {
   pack: string;
@@ -100,7 +101,12 @@ const packOptions = [
   },
 ];
 
-export default function BookingDrawer() {
+type BookingDrawerProps = {
+  standalone?: boolean;
+};
+
+export default function BookingDrawer({ standalone = false }: BookingDrawerProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<BookingForm>(initialForm);
@@ -129,12 +135,23 @@ export default function BookingDrawer() {
   };
 
   useEffect(() => {
+    if (standalone) {
+      setIsOpen(true);
+      return;
+    }
+
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       if (!target) return;
       const trigger = target.closest("[data-open-booking]");
       if (!trigger) return;
       event.preventDefault();
+
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        window.location.href = "/reservation";
+        return;
+      }
+
       setIsOpen(true);
     };
 
@@ -148,12 +165,13 @@ export default function BookingDrawer() {
       document.removeEventListener("click", onClick);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, []);
+  }, [standalone]);
 
   useEffect(() => {
+    if (standalone) return;
     document.body.classList.toggle("booking-open", isOpen);
     return () => document.body.classList.remove("booking-open");
-  }, [isOpen]);
+  }, [isOpen, standalone]);
 
   const canGoNext = useMemo(() => {
     if (step === 0) return Boolean(form.vehicleModel.trim());
@@ -175,6 +193,10 @@ export default function BookingDrawer() {
   }, [form, isEmailValid, step]);
 
   const closeDrawer = () => {
+    if (standalone) {
+      router.push("/");
+      return;
+    }
     setIsOpen(false);
     setStep(0);
     setForm(initialForm);
@@ -345,15 +367,19 @@ export default function BookingDrawer() {
 
   return (
     <>
-      <div
-        className={`booking-overlay${isOpen ? " is-open" : ""}`}
-        onClick={closeDrawer}
-        aria-hidden={!isOpen}
-      />
+      {!standalone && (
+        <div
+          className={`booking-overlay${isOpen ? " is-open" : ""}`}
+          onClick={closeDrawer}
+          aria-hidden={!isOpen}
+        />
+      )}
 
       <aside
-        className={`booking-panel${isOpen ? " is-open" : ""}`}
-        aria-hidden={!isOpen}
+        className={`booking-panel${isOpen || standalone ? " is-open" : ""}${
+          standalone ? " booking-panel--page" : ""
+        }`}
+        aria-hidden={standalone ? false : !isOpen}
         aria-label="Formulaire de réservation"
       >
         <div className="booking-panel__header">
@@ -372,7 +398,7 @@ export default function BookingDrawer() {
             <h3>Prendre rendez-vous</h3>
           </div>
           <button type="button" className="booking-close" onClick={closeDrawer}>
-            Fermer
+            {standalone ? "Retour au site" : "Fermer"}
           </button>
         </div>
 
