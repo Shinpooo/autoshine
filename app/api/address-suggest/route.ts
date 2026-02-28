@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get("q") || "").trim();
 
-    if (q.length < 3) {
+    if (q.length < 2) {
       return NextResponse.json({ suggestions: [] });
     }
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     nominatimUrl.searchParams.set("format", "jsonv2");
     nominatimUrl.searchParams.set("countrycodes", "be");
     nominatimUrl.searchParams.set("addressdetails", "1");
-    nominatimUrl.searchParams.set("limit", "6");
+    nominatimUrl.searchParams.set("limit", "5");
     nominatimUrl.searchParams.set("q", q);
 
     const response = await fetch(nominatimUrl.toString(), {

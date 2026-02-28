@@ -107,7 +107,6 @@ export default function BookingDrawer() {
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [isSuggestLoading, setIsSuggestLoading] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [availabilityDays, setAvailabilityDays] = useState<AvailabilityDay[]>([]);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -117,6 +116,7 @@ export default function BookingDrawer() {
   const [bookingError, setBookingError] = useState("");
   const [bookingSuccess, setBookingSuccess] = useState("");
   const debounceRef = useRef<number | null>(null);
+  const addressInputRef = useRef<HTMLInputElement | null>(null);
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
 
   const sanitizePhone = (value: string) => {
@@ -180,7 +180,6 @@ export default function BookingDrawer() {
     setForm(initialForm);
     setAddressSuggestions([]);
     setSelectedAddress(null);
-    setShowSuggestions(false);
     setAvailabilityDays([]);
     setAvailabilityLoading(false);
     setAvailabilityError("");
@@ -290,8 +289,14 @@ export default function BookingDrawer() {
   useEffect(() => {
     if (!isOpen || step !== 2) return;
 
+    if (selectedAddress) {
+      setAddressSuggestions([]);
+      setIsSuggestLoading(false);
+      return;
+    }
+
     const query = form.address.trim();
-    if (query.length < 3) {
+    if (query.length < 2) {
       setAddressSuggestions([]);
       setIsSuggestLoading(false);
       return;
@@ -534,21 +539,39 @@ export default function BookingDrawer() {
               <label>
                 Adresse de la prestation
                 <div className="booking-address-wrap">
-                  <input
-                    type="text"
-                    placeholder="Rue, numéro, code postal, ville"
-                    value={form.address}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => {
-                      window.setTimeout(() => setShowSuggestions(false), 120);
-                    }}
-                    onChange={(e) => {
-                      updateField("address", e.target.value);
-                      setSelectedAddress(null);
-                    }}
-                  />
+                  <div className="booking-address-input">
+                    <span className="booking-address-icon" aria-hidden>
+                      ⌕
+                    </span>
+                    <input
+                      ref={addressInputRef}
+                      type="text"
+                      placeholder="Rue, numéro, code postal, ville"
+                      value={form.address}
+                      readOnly={Boolean(selectedAddress)}
+                      onChange={(e) => {
+                        updateField("address", e.target.value);
+                        setSelectedAddress(null);
+                      }}
+                    />
+                    {form.address.trim().length > 0 && (
+                      <button
+                        type="button"
+                        className="booking-address-clear"
+                        aria-label="Effacer l'adresse"
+                        onClick={() => {
+                          updateField("address", "");
+                          setSelectedAddress(null);
+                          setAddressSuggestions([]);
+                          window.setTimeout(() => addressInputRef.current?.focus(), 0);
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
 
-                  {showSuggestions && (isSuggestLoading || addressSuggestions.length > 0) && (
+                  {!selectedAddress && form.address.trim().length >= 2 && (
                     <div className="booking-address-list">
                       {isSuggestLoading && (
                         <button type="button" className="booking-address-item" disabled>
@@ -556,7 +579,7 @@ export default function BookingDrawer() {
                         </button>
                       )}
                       {!isSuggestLoading &&
-                        addressSuggestions.map((item) => (
+                        addressSuggestions.slice(0, 5).map((item) => (
                           <button
                             key={item.id}
                             type="button"
@@ -564,12 +587,18 @@ export default function BookingDrawer() {
                             onClick={() => {
                               updateField("address", item.label);
                               setSelectedAddress(item);
-                              setShowSuggestions(false);
+                              setAddressSuggestions([]);
+                              addressInputRef.current?.blur();
                             }}
                           >
                             {item.label}
                           </button>
                         ))}
+                      {!isSuggestLoading && addressSuggestions.length === 0 && (
+                        <button type="button" className="booking-address-item" disabled>
+                          Aucune adresse trouvée.
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -585,7 +614,7 @@ export default function BookingDrawer() {
                 />
               </label>
 
-              {!selectedAddress && form.address.trim().length >= 3 && (
+              {!selectedAddress && form.address.trim().length >= 2 && (
                 <div className="booking-zone-warning">
                   Sélectionne une adresse proposée pour valider la zone d'intervention.
                 </div>

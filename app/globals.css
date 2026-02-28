@@ -414,12 +414,12 @@ body.booking-open {
 
 .booking-form {
   padding: 20px 24px 24px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 16px;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -430,6 +430,10 @@ body.booking-open {
   display: grid;
   gap: 14px;
   animation: fadeUp 0.32s ease both;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .booking-fields label {
@@ -594,17 +598,51 @@ body.booking-open {
 .booking-address-wrap {
   position: relative;
   width: 100%;
+  display: grid;
+  gap: 6px;
+}
+
+.booking-address-input {
+  position: relative;
+}
+
+.booking-address-input input {
+  padding-left: 36px;
+  padding-right: 34px;
+}
+
+.booking-address-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(245, 245, 245, 0.55);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.booking-address-clear {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
 }
 
 .booking-address-list {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 4;
+  position: relative;
   border: 1px solid rgba(245, 245, 245, 0.2);
-  background: #020202;
-  max-height: 220px;
+  background: #0a0a0a;
+  max-height: 250px;
   overflow-y: auto;
 }
 
@@ -615,7 +653,7 @@ body.booking-open {
   border-bottom: 1px solid rgba(245, 245, 245, 0.09);
   background: transparent;
   color: #ffffff;
-  padding: 10px 12px;
+  padding: 11px 12px;
   font-size: 0.84rem;
   line-height: 1.45;
 }
@@ -805,20 +843,15 @@ body.booking-open {
 }
 
 .booking-actions {
-  margin-top: 4px;
+  margin-top: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  position: sticky;
-  bottom: 0;
-  z-index: 3;
-  background: linear-gradient(
-    180deg,
-    rgba(7, 7, 7, 0) 0%,
-    rgba(7, 7, 7, 0.96) 24%,
-    rgba(7, 7, 7, 0.98) 100%
-  );
-  padding-top: 14px;
+  border-top: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(7, 7, 7, 0.98);
+  padding-top: 12px;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom));
+  z-index: 4;
 }
 
 .booking-btn {
@@ -1420,6 +1453,11 @@ body.booking-open {
   .booking-form {
     padding: 16px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    gap: 12px;
+  }
+
+  .booking-fields {
+    padding-bottom: 4px;
   }
 
   .booking-calendar {
@@ -1455,5 +1493,15 @@ body.booking-open {
   .booking-slot-item {
     font-size: 0.72rem;
     letter-spacing: 0.03em;
+  }
+
+  .booking-actions {
+    position: sticky;
+    bottom: 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .booking-btn {
+    min-height: 46px;
   }
 }
