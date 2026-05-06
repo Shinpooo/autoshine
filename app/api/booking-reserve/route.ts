@@ -119,6 +119,7 @@ async function sendReservationEmail(args: {
     await transporter.sendMail({
       from: fromEmail,
       to: args.to,
+      bcc: fromEmail,
       subject: "LN AutoShine - Confirmation de votre demande",
       html,
       text: `Réservation reçue.\nDate: ${dateText}\nPack: ${args.pack}\nVéhicule: ${args.vehicleModel}\nAdresse: ${args.address} ${args.houseNumber}`,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 type BookingForm = {
@@ -21,10 +21,18 @@ type BookingForm = {
 type AddressSuggestion = {
   id: string;
   label: string;
+  addressLine1: string;
+  addressLine2: string;
+  houseNumber: string;
+  street: string;
+  postcode: string;
+  city: string;
   lat: number;
   lon: number;
   distanceKm: number;
   inZone: boolean;
+  confidence: number | null;
+  matchType: string;
 };
 
 type AvailabilitySlot = {
@@ -101,6 +109,13 @@ const packOptions = [
   },
 ];
 
+const bookingSteps = ["Véhicule", "Créneau", "Contact", "Validation"];
+const whatsappPhone = "32493084331";
+
+function createWhatsAppUrl(message: string) {
+  return `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+}
+
 type BookingDrawerProps = {
   standalone?: boolean;
 };
@@ -112,6 +127,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
   const [form, setForm] = useState<BookingForm>(initialForm);
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+  const [addressSuggestError, setAddressSuggestError] = useState("");
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [availabilityDays, setAvailabilityDays] = useState<AvailabilityDay[]>([]);
@@ -124,6 +140,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
   const debounceRef = useRef<number | null>(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+  const isSelectedAddressInZone = Boolean(selectedAddress?.inZone);
 
   const sanitizePhone = (value: string) => {
     const stripped = value.replace(/[^\d+]/g, "");
@@ -134,24 +151,50 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
     return stripped.replace(/\+/g, "");
   };
 
+  const findPackName = useCallback((value: string | null | undefined) => {
+    return packOptions.find((pack) => pack.name === value)?.name || "";
+  }, []);
+
+  const applyPackSelection = useCallback((packName: string) => {
+    setStep(0);
+    setExpandedPack(null);
+    setBookingError("");
+    setBookingSuccess("");
+    setForm((prev) => ({
+      ...prev,
+      pack: packName,
+      date: "",
+      timeSlot: "",
+      timeSlotLabel: "",
+    }));
+  }, []);
+
   useEffect(() => {
     if (standalone) {
       setIsOpen(true);
+      const params = new URLSearchParams(window.location.search);
+      const packName = findPackName(params.get("pack"));
+      if (packName) applyPackSelection(packName);
       return;
     }
 
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       if (!target) return;
-      const trigger = target.closest("[data-open-booking]");
+      const trigger = target.closest<HTMLElement>("[data-open-booking]");
       if (!trigger) return;
       event.preventDefault();
 
+      const packName = findPackName(trigger.dataset.bookingPack);
+
       if (window.matchMedia("(max-width: 900px)").matches) {
-        window.location.href = "/reservation";
+        window.location.href = packName
+          ? `/reservation?pack=${encodeURIComponent(packName)}`
+          : "/reservation";
         return;
       }
 
+      if (packName) applyPackSelection(packName);
       setIsOpen(true);
     };
 
@@ -165,7 +208,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
       document.removeEventListener("click", onClick);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [standalone]);
+  }, [applyPackSelection, findPackName, standalone]);
 
   useEffect(() => {
     if (standalone) return;
@@ -174,8 +217,8 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
   }, [isOpen, standalone]);
 
   const canGoNext = useMemo(() => {
-    if (step === 0) return Boolean(form.vehicleModel.trim());
-    if (step === 1) return Boolean(form.pack);
+    if (step === 0) return Boolean(form.pack && form.vehicleModel.trim());
+    if (step === 1) return Boolean(form.date && form.timeSlot);
     if (step === 2) {
       return Boolean(
         form.firstName.trim() &&
@@ -185,12 +228,11 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
           isEmailValid &&
           form.address.trim() &&
           form.houseNumber.trim() &&
-          selectedAddress
+          isSelectedAddressInZone
       );
     }
-    if (step === 3) return Boolean(form.date && form.timeSlot);
     return true;
-  }, [form, isEmailValid, step]);
+  }, [form, isEmailValid, isSelectedAddressInZone, step]);
 
   const closeDrawer = () => {
     if (standalone) {
@@ -201,6 +243,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
     setStep(0);
     setForm(initialForm);
     setAddressSuggestions([]);
+    setAddressSuggestError("");
     setSelectedAddress(null);
     setAvailabilityDays([]);
     setAvailabilityLoading(false);
@@ -214,7 +257,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (step < 4) {
+    if (step < bookingSteps.length - 1) {
       if (canGoNext) {
         setBookingError("");
         setStep((prev) => prev + 1);
@@ -249,8 +292,28 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const clearAddress = () => {
+    setForm((prev) => ({ ...prev, address: "", houseNumber: "" }));
+    setSelectedAddress(null);
+    setAddressSuggestions([]);
+    setAddressSuggestError("");
+    window.setTimeout(() => addressInputRef.current?.focus(), 0);
+  };
+
+  const selectAddress = (item: AddressSuggestion) => {
+    setForm((prev) => ({
+      ...prev,
+      address: item.label,
+      houseNumber: item.houseNumber || "",
+    }));
+    setSelectedAddress(item);
+    setAddressSuggestions([]);
+    setAddressSuggestError("");
+    addressInputRef.current?.blur();
+  };
+
   useEffect(() => {
-    if (!isOpen || step !== 3 || !form.pack) return;
+    if (!isOpen || step !== 1 || !form.pack) return;
 
     const controller = new AbortController();
 
@@ -276,19 +339,21 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
         const days = data.days || [];
         setAvailabilityDays(days);
 
-        const selectedDay = days.find((day) => day.date === form.date);
-        const slotStillAvailable = selectedDay?.slots.some(
-          (slot) => slot.start === form.timeSlot
-        );
+        setForm((prev) => {
+          const selectedDay = days.find((day) => day.date === prev.date);
+          const slotStillAvailable = selectedDay?.slots.some(
+            (slot) => slot.start === prev.timeSlot
+          );
 
-        if (!selectedDay || !slotStillAvailable) {
-          setForm((prev) => ({
+          if (selectedDay && slotStillAvailable) return prev;
+
+          return {
             ...prev,
             date: "",
             timeSlot: "",
             timeSlotLabel: "",
-          }));
-        }
+          };
+        });
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
         setAvailabilityDays([]);
@@ -307,19 +372,47 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
     () => availabilityDays.find((day) => day.date === form.date) ?? null,
     [availabilityDays, form.date]
   );
+  const summarySlotLabel = selectedDay
+    ? `${selectedDay.label} - ${form.timeSlotLabel || form.timeSlot}`
+    : `${form.date} - ${form.timeSlotLabel || form.timeSlot}`;
+  const packHelpWhatsAppUrl = createWhatsAppUrl(
+    [
+      "Bonjour LN AutoShine,",
+      "J'aimerais avoir un conseil pour choisir le pack le plus adapté à mon véhicule.",
+      form.vehicleModel.trim() ? `Véhicule: ${form.vehicleModel.trim()}` : "",
+      form.pack ? `Pack envisagé: ${form.pack}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n")
+  );
+  const outOfZoneWhatsAppUrl = createWhatsAppUrl(
+    [
+      "Bonjour LN AutoShine,",
+      "Mon adresse semble être hors zone dans le formulaire de réservation.",
+      selectedAddress ? `Adresse: ${selectedAddress.label}` : "",
+      selectedAddress ? `Distance estimée: ${selectedAddress.distanceKm} km` : "",
+      form.vehicleModel.trim() ? `Véhicule: ${form.vehicleModel.trim()}` : "",
+      form.pack ? `Pack souhaité: ${form.pack}` : "",
+      "Pouvez-vous me confirmer si une intervention est possible ?",
+    ]
+      .filter(Boolean)
+      .join("\n")
+  );
 
   useEffect(() => {
     if (!isOpen || step !== 2) return;
 
     if (selectedAddress) {
       setAddressSuggestions([]);
+      setAddressSuggestError("");
       setIsSuggestLoading(false);
       return;
     }
 
     const query = form.address.trim();
-    if (query.length < 2) {
+    if (query.length < 3) {
       setAddressSuggestions([]);
+      setAddressSuggestError("");
       setIsSuggestLoading(false);
       return;
     }
@@ -330,26 +423,36 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
 
     debounceRef.current = window.setTimeout(async () => {
       setIsSuggestLoading(true);
+      setAddressSuggestError("");
       try {
         const response = await fetch(`/api/address-suggest?q=${encodeURIComponent(query)}`);
-        const data = (await response.json()) as { suggestions?: AddressSuggestion[] };
+        const data = (await response.json()) as {
+          suggestions?: AddressSuggestion[];
+          error?: string;
+        };
+        if (data.error) {
+          setAddressSuggestError(data.error);
+          setAddressSuggestions([]);
+          return;
+        }
         setAddressSuggestions(data.suggestions || []);
       } catch {
         setAddressSuggestions([]);
+        setAddressSuggestError("Impossible de charger les suggestions d'adresse.");
       } finally {
         setIsSuggestLoading(false);
       }
-    }, 250);
+    }, 350);
 
     return () => {
       if (debounceRef.current) {
         window.clearTimeout(debounceRef.current);
       }
     };
-  }, [form.address, isOpen, step]);
+  }, [form.address, isOpen, selectedAddress, step]);
 
   useEffect(() => {
-    if (!isOpen || step !== 1 || !expandedPack) return;
+    if (!isOpen || step !== 0 || !expandedPack) return;
 
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
@@ -383,34 +486,22 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
         aria-label="Formulaire de réservation"
       >
         <div className="booking-panel__header">
-          <button
-            type="button"
-            className="booking-back-top"
-            onClick={() => setStep((prev) => Math.max(prev - 1, 0))}
-            disabled={step === 0 || Boolean(bookingSuccess)}
-            aria-label="Étape précédente"
-          >
-            ←
-          </button>
-
           <div>
             <p className="eyebrow">Réservation</p>
-            <h3>Prendre rendez-vous</h3>
+            <h3>Réserver votre nettoyage</h3>
           </div>
           <button type="button" className="booking-close" onClick={closeDrawer}>
-            {standalone ? "Retour au site" : "Fermer"}
+            {standalone ? "Quitter" : "Fermer"}
           </button>
         </div>
 
         <div className="booking-steps" aria-hidden>
-          {["Véhicule", "Service", "Contact", "Créneau", "Validation"].map(
-            (label, index) => (
+          {bookingSteps.map((label, index) => (
             <div key={label} className={`booking-step${index <= step ? " is-active" : ""}`}>
               <span>{index + 1}</span>
               <small>{label}</small>
             </div>
-          )
-          )}
+          ))}
         </div>
 
         <form className="booking-form" onSubmit={onSubmit}>
@@ -425,11 +516,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                   onChange={(e) => updateField("vehicleModel", e.target.value)}
                 />
               </label>
-            </div>
-          )}
 
-          {step === 1 && (
-            <div className="booking-fields">
               <div className="booking-pack-group">
                 <span>Choix du pack</span>
                 <div className="booking-pack-grid">
@@ -500,7 +587,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                 <p className="booking-pack-help">
                   Vous avez un doute ?{" "}
                   <a
-                    href="https://api.whatsapp.com/send/?phone=32493084331&text&type=phone_number&app_absent=0"
+                    href={packHelpWhatsAppUrl}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -566,18 +653,17 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                 Adresse de la prestation
                 <div className="booking-address-wrap">
                   <div className="booking-address-input">
-                    <span className="booking-address-icon" aria-hidden>
-                      ⌕
-                    </span>
+                    <span className="booking-address-icon" aria-hidden />
                     <input
                       ref={addressInputRef}
                       type="text"
-                      placeholder="Rue, numéro, code postal, ville"
+                      placeholder="Adresse complète, code postal, ville"
                       value={form.address}
                       readOnly={Boolean(selectedAddress)}
                       onChange={(e) => {
                         updateField("address", e.target.value);
                         setSelectedAddress(null);
+                        setAddressSuggestError("");
                       }}
                     />
                     {form.address.trim().length > 0 && (
@@ -585,44 +671,50 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                         type="button"
                         className="booking-address-clear"
                         aria-label="Effacer l'adresse"
-                        onClick={() => {
-                          updateField("address", "");
-                          setSelectedAddress(null);
-                          setAddressSuggestions([]);
-                          window.setTimeout(() => addressInputRef.current?.focus(), 0);
-                        }}
+                        onClick={clearAddress}
                       >
                         ×
                       </button>
                     )}
                   </div>
 
-                  {!selectedAddress && form.address.trim().length >= 2 && (
+                  {!selectedAddress && form.address.trim().length >= 3 && (
                     <div className="booking-address-list">
                       {isSuggestLoading && (
                         <button type="button" className="booking-address-item" disabled>
-                          Recherche d'adresses...
+                          Recherche d&apos;adresses...
+                        </button>
+                      )}
+                      {!isSuggestLoading && addressSuggestError && (
+                        <button type="button" className="booking-address-item" disabled>
+                          {addressSuggestError}
                         </button>
                       )}
                       {!isSuggestLoading &&
+                        !addressSuggestError &&
                         addressSuggestions.slice(0, 5).map((item) => (
                           <button
                             key={item.id}
                             type="button"
                             className="booking-address-item"
-                            onClick={() => {
-                              updateField("address", item.label);
-                              setSelectedAddress(item);
-                              setAddressSuggestions([]);
-                              addressInputRef.current?.blur();
-                            }}
+                            onClick={() => selectAddress(item)}
                           >
-                            {item.label}
+                            <span>{item.addressLine1 || item.label}</span>
+                            {item.addressLine2 && <small>{item.addressLine2}</small>}
+                            <small
+                              className={`booking-address-distance${
+                                item.inZone ? " is-in-zone" : " is-out-zone"
+                              }`}
+                            >
+                              {item.inZone
+                                ? `${item.distanceKm} km`
+                                : `Hors zone - ${item.distanceKm} km`}
+                            </small>
                           </button>
                         ))}
-                      {!isSuggestLoading && addressSuggestions.length === 0 && (
+                      {!isSuggestLoading && !addressSuggestError && addressSuggestions.length === 0 && (
                         <button type="button" className="booking-address-item" disabled>
-                          Aucune adresse trouvée.
+                          Aucune adresse trouvée. Essaie avec le numéro ou le code postal.
                         </button>
                       )}
                     </div>
@@ -630,19 +722,49 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                 </div>
               </label>
 
-              <label>
-                Numéro de maison
-                <input
-                  type="text"
-                  placeholder="Ex: 12A"
-                  value={form.houseNumber}
-                  onChange={(e) => updateField("houseNumber", e.target.value)}
-                />
-              </label>
+              {selectedAddress?.houseNumber ? (
+                <div className="booking-zone-status">
+                  Numéro détecté: {selectedAddress.houseNumber}
+                </div>
+              ) : (
+                <label>
+                  Numéro de maison
+                  <input
+                    type="text"
+                    placeholder="Ex: 12A"
+                    value={form.houseNumber}
+                    onChange={(e) => updateField("houseNumber", e.target.value)}
+                  />
+                </label>
+              )}
 
-              {!selectedAddress && form.address.trim().length >= 2 && (
+              {!selectedAddress && form.address.trim().length >= 3 && (
                 <div className="booking-zone-warning">
-                  Sélectionne une adresse proposée pour valider la zone d'intervention.
+                  Sélectionne une adresse proposée pour valider automatiquement la zone.
+                </div>
+              )}
+
+              {selectedAddress && (
+                <div
+                  className={`booking-zone-status${
+                    selectedAddress.inZone ? " is-in-zone" : " is-out-zone"
+                  }`}
+                >
+                  {selectedAddress.inZone
+                    ? `Adresse dans la zone (${selectedAddress.distanceKm} km).`
+                    : (
+                      <>
+                        Adresse hors zone ({selectedAddress.distanceKm} km).{" "}
+                        <a
+                          href={outOfZoneWhatsAppUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Contactez-nous sur WhatsApp
+                        </a>
+                        .
+                      </>
+                    )}
                 </div>
               )}
 
@@ -658,52 +780,53 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
             </div>
           )}
 
-          {step === 3 && (
+          {step === 1 && (
             <div className="booking-fields">
               <div className="booking-calendar">
                 <div className="booking-calendar-days">
                   <div className="booking-calendar-title">Dates disponibles</div>
-
-                  {availabilityLoading && (
-                    <div className="booking-calendar-empty">
-                      Chargement des disponibilites...
-                    </div>
-                  )}
-
-                  {!availabilityLoading && availabilityError && (
-                    <div className="booking-calendar-empty">{availabilityError}</div>
-                  )}
-
-                  {!availabilityLoading &&
-                    !availabilityError &&
-                    availabilityDays.length === 0 && (
+                  <div className="booking-days-list">
+                    {availabilityLoading && (
                       <div className="booking-calendar-empty">
-                        Aucun creneau disponible pour ce pack.
+                        Chargement des disponibilités...
                       </div>
                     )}
 
-                  {!availabilityLoading &&
-                    !availabilityError &&
-                    availabilityDays.map((day) => (
-                      <button
-                        key={day.date}
-                        type="button"
-                        className={`booking-day-item${
-                          form.date === day.date ? " is-selected" : ""
-                        }`}
-                        onClick={() =>
-                          setForm((prev) => ({
-                            ...prev,
-                            date: day.date,
-                            timeSlot: "",
-                            timeSlotLabel: "",
-                          }))
-                        }
-                      >
-                        <span>{day.label}</span>
-                        <small>{day.slots.length} creneaux</small>
-                      </button>
-                    ))}
+                    {!availabilityLoading && availabilityError && (
+                      <div className="booking-calendar-empty">{availabilityError}</div>
+                    )}
+
+                    {!availabilityLoading &&
+                      !availabilityError &&
+                      availabilityDays.length === 0 && (
+                        <div className="booking-calendar-empty">
+                          Aucun créneau disponible pour ce pack.
+                        </div>
+                      )}
+
+                    {!availabilityLoading &&
+                      !availabilityError &&
+                      availabilityDays.map((day) => (
+                        <button
+                          key={day.date}
+                          type="button"
+                          className={`booking-day-item${
+                            form.date === day.date ? " is-selected" : ""
+                          }`}
+                          onClick={() =>
+                            setForm((prev) => ({
+                              ...prev,
+                              date: day.date,
+                              timeSlot: "",
+                              timeSlotLabel: "",
+                            }))
+                          }
+                        >
+                          <span>{day.label}</span>
+                          <small>{day.slots.length} créneaux</small>
+                        </button>
+                      ))}
+                  </div>
                 </div>
 
                 <div className="booking-calendar-slots">
@@ -711,7 +834,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
 
                   {!form.date && (
                     <div className="booking-calendar-empty">
-                      Selectionne d'abord une date.
+                      Sélectionne d&apos;abord une date.
                     </div>
                   )}
 
@@ -742,7 +865,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
             </div>
           )}
 
-          {step === 4 && (
+          {step === 3 && (
             <div className="booking-fields booking-summary">
               <h4>Résumé de la demande</h4>
               <p>
@@ -767,35 +890,41 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                 <strong>Numéro:</strong> {form.houseNumber}
               </p>
               <p>
-                <strong>Créneau:</strong> {form.date} - {form.timeSlotLabel || form.timeSlot}
+                <strong>Créneau:</strong> {summarySlotLabel}
               </p>
               {bookingError && <p className="booking-success">{bookingError}</p>}
               {bookingSuccess && <p className="booking-success">{bookingSuccess}</p>}
             </div>
           )}
 
-          <div className="booking-actions">
-            <button
-              type="button"
-              className="booking-btn booking-btn--ghost"
-              onClick={() => setStep((prev) => Math.max(prev - 1, 0))}
-              disabled={step === 0 || bookingLoading || Boolean(bookingSuccess)}
-            >
-              Retour
-            </button>
+          <div className={`booking-actions${step === 0 ? " booking-actions--single" : ""}`}>
+            {step > 0 && (
+              <button
+                type="button"
+                className="booking-btn booking-btn--ghost"
+                onClick={() => setStep((prev) => Math.max(prev - 1, 0))}
+                disabled={bookingLoading || Boolean(bookingSuccess)}
+              >
+                Retour
+              </button>
+            )}
 
             <button
               type="submit"
               className="booking-btn"
-              disabled={bookingLoading || Boolean(bookingSuccess) || (step < 4 && !canGoNext)}
+              disabled={
+                bookingLoading ||
+                Boolean(bookingSuccess) ||
+                (step < bookingSteps.length - 1 && !canGoNext)
+              }
             >
-              {step < 4
+              {step < bookingSteps.length - 1
                 ? "Continuer"
                 : bookingLoading
-                  ? "Confirmation..."
+                  ? "Envoi..."
                   : bookingSuccess
-                    ? "Réservation envoyée"
-                    : "Confirmer la réservation"}
+                    ? "Demande envoyée"
+                    : "Envoyer la demande"}
             </button>
           </div>
         </form>

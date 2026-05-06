@@ -24,7 +24,12 @@
 .DS_Store
 *.pem
 autoshine-*.json
+ln-autoshine-*.json
 *service-account*.json
+
+# local documents
+/Selim_*.pdf
+/Plan financier*.pdf
 
 # debug
 npm-debug.log*

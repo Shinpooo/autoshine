@@ -5,6 +5,9 @@ import BeforeAfter from "./components/BeforeAfter";
 import TestimonialsSection from "./components/TestimonialsSection";
 import BookingDrawer from "./components/BookingDrawer";
 import HeroVideo from "./components/HeroVideo";
+import MobileStickyCta from "./components/MobileStickyCta";
+import WhatsAppIcon from "./components/WhatsAppIcon";
+import { businessJsonLd } from "./seo";
 
 const packs = [
   {
@@ -53,23 +56,17 @@ const packs = [
   },
 ];
 
-const gallery = [
-  { src: "/images/gallery-1.jpg", alt: "Voiture noire haut de gamme" },
-  { src: "/images/gallery-2.jpg", alt: "Coupé noir en ville" },
-  { src: "/images/after-clean.jpg", alt: "Carrosserie brillante après detailing" },
-  { src: "/images/interior-leather.jpg", alt: "Intérieur cuir élégant" },
-];
-
-const why = [
-  "Service mobile premium",
-  "Produits professionnels",
-  "Résultat durable",
-  "Approche personnalisée",
-];
+const whatsappHref = `https://wa.me/32493084331?text=${encodeURIComponent(
+  "Bonjour LN AutoShine, j'aimerais avoir des informations pour un detailing automobile à domicile."
+)}`;
 
 export default function Home() {
   return (
     <div className="page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
+      />
       <Header />
 
       <main>
@@ -80,20 +77,47 @@ export default function Home() {
           <div className="container hero-content">
             <div className="fade-up">
               <p className="eyebrow hide-mobile">Detailing automobile à domicile</p>
-              <h1 className="hero-title">Redonner l'éclat d'origine</h1>
+              <h1 className="hero-title">
+                Detailing automobile à domicile à Liège, Huy et Amay
+              </h1>
               <p className="hero-text">
-                Un soin précis et professionnel pour sublimer chaque détail de
-                votre véhicule.
+                Nettoyage intérieur et extérieur, lavage à la main et finitions
+                premium pour sublimer chaque détail de votre véhicule.
               </p>
               <div className="hero-actions">
-                <button className="btn hide-mobile" type="button" data-open-booking>
-                  Prendre rendez-vous
+                <button className="btn" type="button" data-open-booking>
+                  Voir les disponibilités
                 </button>
-                <a className="btn btn-ghost" href="#packs">
-                  Voir les packs
+                <a className="btn btn-ghost" href="#avant-apres">
+                  Voir l&apos;avant / après
+                </a>
+                <a
+                  className="btn btn-ghost btn-whatsapp hero-whatsapp"
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Contacter LN AutoShine sur WhatsApp"
+                >
+                  <WhatsAppIcon />
                 </a>
               </div>
+              <p className="cta-microcopy">
+                Réservation en 2 minutes · Zone Amay, Liège, Huy
+              </p>
             </div>
+          </div>
+        </section>
+
+        <section className="section" id="avant-apres">
+          <div className="container ba-section">
+            <div className="ba-heading">
+              <p className="eyebrow">Résultat</p>
+              <h2 className="section-title">Avant / Après</h2>
+              <p className="section-subtitle">
+                Le résultat parle de lui-même. Faites glisser pour comparer.
+              </p>
+            </div>
+            <BeforeAfter />
           </div>
         </section>
 
@@ -105,9 +129,9 @@ export default function Home() {
                 Detailing haut de gamme, finition irréprochable
               </h2>
               <p className="section-subtitle">
-                Chaque intervention est réalisée avec des produits professionnels
-                et des méthodes maîtrisées, pour un résultat immédiatement
-                visible et durable.
+                LN AutoShine se déplace à domicile autour d&apos;Amay, Liège et Huy
+                pour nettoyer, protéger et valoriser votre véhicule avec des
+                produits professionnels et des méthodes maîtrisées.
               </p>
             </div>
             <div className="promise-media">
@@ -127,8 +151,9 @@ export default function Home() {
             <p className="eyebrow">Nos prestations</p>
             <h2 className="section-title">Packs detailing</h2>
             <p className="section-subtitle">
-              Trois niveaux d'intervention pour répondre à chaque besoin,
-              du maintien régulier au traitement complet premium.
+              Trois niveaux d&apos;intervention pour répondre à chaque besoin :
+              entretien régulier, nettoyage intérieur extérieur complet ou
+              remise en état premium avant une vente.
             </p>
             <div className="packs-grid">
               {packs.map((pack) => (
@@ -154,23 +179,18 @@ export default function Home() {
                     </ul>
                     <div className="pack-meta">{pack.duration}</div>
                     <div className="pack-meta">{pack.note}</div>
+                    <button
+                      className="btn pack-cta"
+                      type="button"
+                      data-open-booking
+                      data-booking-pack={pack.name}
+                    >
+                      Choisir le {pack.name}
+                    </button>
                   </div>
                 </article>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className="section" id="avant-apres">
-          <div className="container ba-section">
-            <div>
-              <p className="eyebrow">Résultat</p>
-              <h2 className="section-title">Avant / Après</h2>
-              <p className="section-subtitle">
-                Le résultat parle de lui-même. Faites glisser pour comparer.
-              </p>
-            </div>
-            <BeforeAfter />
           </div>
         </section>
 
@@ -219,10 +239,10 @@ export default function Home() {
 
         <section className="section" id="zone">
           <div className="container">
-            <p className="eyebrow">Zone d'intervention</p>
+            <p className="eyebrow">Zone d&apos;intervention</p>
             <h2 className="section-title">Liège, Huy & alentours</h2>
             <p className="section-subtitle zone-subtitle-one-line">
-              Nous intervenons sans frais supplémentaires dans un rayon de 20 km autour d'Amay.
+              Nous intervenons sans frais supplémentaires dans un rayon de 20 km autour d&apos;Amay, notamment vers Liège, Huy, Engis, Flémalle et Seraing.
             </p>
             <div style={{ height: 20 }} />
             <ServiceMapClient />
@@ -233,7 +253,16 @@ export default function Home() {
       <footer className="footer">
         <div className="container footer-grid">
           <div>
-            <div className="brand">LN AUTOSHINE</div>
+            <div className="brand footer-brand" aria-label="LN AutoShine">
+              <Image
+                className="brand-logo"
+                src="/images/logo-transparent.png"
+                alt="LN AutoShine"
+                width={2172}
+                height={724}
+                sizes="190px"
+              />
+            </div>
             <small>Detailing automobile haut de gamme à domicile.</small>
           </div>
           <div>
@@ -261,6 +290,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <MobileStickyCta whatsappHref={whatsappHref} />
 
       <BookingDrawer />
     </div>

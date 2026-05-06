@@ -25,7 +25,7 @@ export default function HeroVideo() {
       muted
       loop
       playsInline
-      preload="auto"
+      preload="metadata"
       poster="/images/pexels-lynxexotics.jpg"
     />
   );

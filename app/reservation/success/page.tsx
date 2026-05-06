@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Réservation confirmée",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ReservationSuccessPage() {
   return (
@@ -12,7 +21,7 @@ export default function ReservationSuccessPage() {
         </p>
         <div style={{ marginTop: 28, display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link className="btn" href="/">
-            Retour a l'accueil
+            Retour a l&apos;accueil
           </Link>
         </div>
       </section>

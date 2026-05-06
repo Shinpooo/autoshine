@@ -2,6 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Create a local `.env.local` file with the required private keys:
+
+```bash
+GEOAPIFY_API_KEY=your_geoapify_api_key
+```
+
 First, run the development server:
 
 ```bash

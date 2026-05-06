@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 const testimonials = [
   {
     quote: "Intérieur impeccable, plus aucune poussière. Service au top.",
@@ -60,10 +62,10 @@ export default function TestimonialsSection() {
         <div className="testimonials-marquee">
           {columns.map((column, columnIndex) => (
             <div className="testimonials-column" key={`col-${columnIndex}`}>
-                <div
-                  className="testimonials-track"
-                  style={{ "--scroll-duration": `${durations[columnIndex]}s` } as CSSProperties}
-                >
+              <div
+                className="testimonials-track"
+                style={{ "--scroll-duration": `${durations[columnIndex]}s` } as CSSProperties}
+              >
                 {[...column, ...column].map((item, itemIndex) => (
                   <article
                     key={`${columnIndex}-${item.name}-${itemIndex}`}
@@ -78,8 +80,29 @@ export default function TestimonialsSection() {
             </div>
           ))}
         </div>
+        <div className="testimonials-mobile" aria-label="Avis clients">
+          <div className="testimonials-mobile-track">
+            {[0, 1].map((groupIndex) => (
+              <div
+                className="testimonials-mobile-group"
+                key={`mobile-group-${groupIndex}`}
+                aria-hidden={groupIndex === 1}
+              >
+                {testimonials.map((item, itemIndex) => (
+                  <article
+                    key={`mobile-${groupIndex}-${item.name}-${itemIndex}`}
+                    className="testimonial-card testimonials-mobile-card"
+                  >
+                    <div className="testimonial-rating">★★★★★</div>
+                    <p>{item.quote}</p>
+                    <span>{item.name}</span>
+                  </article>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
-import type { CSSProperties } from "react";
