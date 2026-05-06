@@ -11,17 +11,31 @@ export default function MobileStickyCta({ whatsappHref }: MobileStickyCtaProps) 
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const updateVisibility = () => {
-      const revealAfter = Math.min(360, Math.max(180, window.innerHeight * 0.35));
-      setIsVisible(window.scrollY > revealAfter);
-    };
+    let observer: IntersectionObserver | null = null;
 
-    updateVisibility();
-    window.addEventListener("scroll", updateVisibility, { passive: true });
-    window.addEventListener("resize", updateVisibility);
+    const frame = window.requestAnimationFrame(() => {
+      const heroCta = document.querySelector("[data-hero-booking-cta]");
+      if (!heroCta || !("IntersectionObserver" in window)) {
+        setIsVisible(window.scrollY > window.innerHeight * 0.35);
+        return;
+      }
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsVisible(!entry.isIntersecting);
+        },
+        {
+          rootMargin: "0px 0px -12% 0px",
+          threshold: 0.05,
+        }
+      );
+
+      observer.observe(heroCta);
+    });
+
     return () => {
-      window.removeEventListener("scroll", updateVisibility);
-      window.removeEventListener("resize", updateVisibility);
+      window.cancelAnimationFrame(frame);
+      observer?.disconnect();
     };
   }, []);
 

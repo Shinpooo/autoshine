@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navItems = [
-  { id: "packs", label: "Packs" },
   { id: "avant-apres", label: "Avant / Après" },
+  { id: "packs", label: "Packs" },
   // { id: "realisations", label: "Réalisations" },
   { id: "temoignages", label: "Avis" },
   { id: "zone", label: "Zone" },
