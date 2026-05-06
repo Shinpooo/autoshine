@@ -20,6 +20,7 @@ export default function BeforeAfter() {
     const target = event.target as HTMLElement | null;
     if (target?.closest("[data-open-booking]")) return;
 
+    event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     updatePositionFromPointer(event.clientX);
   };
@@ -50,6 +51,7 @@ export default function BeforeAfter() {
           src="/images/after-clean-v3.png"
           alt="Après detailing"
           fill
+          draggable={false}
           sizes="(max-width: 900px) 90vw, 1200px"
           style={{ objectFit: "cover" }}
         />
@@ -59,6 +61,7 @@ export default function BeforeAfter() {
           src="/images/before-clean-v3.png"
           alt="Avant detailing"
           fill
+          draggable={false}
           sizes="(max-width: 900px) 90vw, 1200px"
           style={{ objectFit: "cover" }}
         />

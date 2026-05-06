@@ -1237,6 +1237,9 @@ body.booking-open {
   margin: 0;
   cursor: pointer;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
   border-radius: 0;
   overflow: hidden;
   border: 1px solid rgba(230, 225, 216, 0.1);
@@ -1250,6 +1253,15 @@ body.booking-open {
   position: absolute;
   inset: 0;
   transition: filter 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ba-image img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
 }
 
 .ba-after {
