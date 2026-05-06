@@ -184,11 +184,11 @@ export default function TestimonialsSection() {
         </div>
         <div className="testimonials-mobile" aria-label="Avis clients">
           <div className="testimonials-mobile-track">
-            {[0, 1].map((groupIndex) => (
+            {[0, 1, 2].map((groupIndex) => (
               <div
                 className="testimonials-mobile-group"
                 key={`mobile-group-${groupIndex}`}
-                aria-hidden={groupIndex === 1}
+                aria-hidden={groupIndex > 0}
               >
                 {testimonials.map((item, itemIndex) => (
                   <article

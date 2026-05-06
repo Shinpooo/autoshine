@@ -1740,10 +1740,10 @@ body.booking-open {
 
 @keyframes testimonialsMobileScroll {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translate3d(-33.3333%, 0, 0);
   }
 }
 
@@ -1860,11 +1860,13 @@ body.booking-open {
   .testimonials-mobile-track {
     display: flex;
     width: max-content;
+    min-width: max-content;
     will-change: transform;
-    animation: testimonialsMobileScroll 52s linear infinite;
+    animation: testimonialsMobileScroll 38s linear infinite;
   }
 
   .testimonials-mobile-group {
+    flex: 0 0 auto;
     display: flex;
     align-items: stretch;
     gap: 14px;
