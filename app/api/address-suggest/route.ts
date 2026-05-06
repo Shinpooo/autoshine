@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const HUY_LAT = 50.51888;
 const HUY_LON = 5.2408;
-const MAX_RADIUS_KM = 20;
+const MAX_RADIUS_KM = 15;
 
 type GeoapifyResult = {
   place_id?: string;

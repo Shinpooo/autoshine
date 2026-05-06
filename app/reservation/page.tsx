@@ -4,7 +4,7 @@ import BookingDrawer from "@/app/components/BookingDrawer";
 export const metadata: Metadata = {
   title: "Réservation detailing à domicile",
   description:
-    "Réservez un nettoyage ou detailing automobile à domicile avec LN AutoShine autour d'Amay, Liège et Huy.",
+    "Réservez un nettoyage ou detailing automobile à domicile avec LN AutoShine dans un rayon de 15 km autour de Huy.",
   alternates: {
     canonical: "/reservation",
   },

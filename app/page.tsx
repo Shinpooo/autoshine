@@ -78,7 +78,7 @@ export default function Home() {
             <div className="fade-up">
               <p className="eyebrow hide-mobile">Detailing automobile à domicile</p>
               <h1 className="hero-title">
-                Detailing automobile à domicile à Liège, Huy et Amay
+                Detailing automobile à domicile à Huy et alentours
               </h1>
               <p className="hero-text">
                 Nettoyage intérieur et extérieur, lavage à la main et finitions
@@ -102,7 +102,7 @@ export default function Home() {
                 </a>
               </div>
               <p className="cta-microcopy">
-                Réservation en 2 minutes · Zone Amay, Liège, Huy
+                Réservation en 2 minutes · Zone 15 km autour de Huy
               </p>
             </div>
           </div>
@@ -129,9 +129,9 @@ export default function Home() {
                 Detailing haut de gamme, finition irréprochable
               </h2>
               <p className="section-subtitle">
-                LN AutoShine se déplace à domicile autour d&apos;Amay, Liège et Huy
-                pour nettoyer, protéger et valoriser votre véhicule avec des
-                produits professionnels et des méthodes maîtrisées.
+                LN AutoShine se déplace à domicile dans un rayon de 15 km autour
+                de Huy pour nettoyer, protéger et valoriser votre véhicule avec
+                des produits professionnels et des méthodes maîtrisées.
               </p>
             </div>
             <div className="promise-media">
@@ -240,9 +240,9 @@ export default function Home() {
         <section className="section" id="zone">
           <div className="container">
             <p className="eyebrow">Zone d&apos;intervention</p>
-            <h2 className="section-title">Liège, Huy & alentours</h2>
+            <h2 className="section-title">Huy & alentours</h2>
             <p className="section-subtitle zone-subtitle-one-line">
-              Nous intervenons sans frais supplémentaires dans un rayon de 20 km autour d&apos;Amay, notamment vers Liège, Huy, Engis, Flémalle et Seraing.
+              Zone de 15 km autour de Huy : Wanze, Amay, Andenne, Engis et Villers-le-Bouillet.
             </p>
             <div style={{ height: 20 }} />
             <ServiceMapClient />
@@ -278,8 +278,8 @@ export default function Home() {
 
             <div className="footer-column">
               <strong>Zone</strong>
-              <span>Entre Liège et Huy</span>
-              <span>Rayon de 20 km autour d&apos;Amay</span>
+              <span>Huy et alentours</span>
+              <span>Rayon de 15 km autour de Huy</span>
             </div>
 
             <div className="footer-column">

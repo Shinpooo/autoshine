@@ -6,7 +6,7 @@ import { siteDescription, siteName, siteUrl } from "./seo";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Detailing automobile à domicile à Liège, Huy et Amay | LN AutoShine",
+    default: "Detailing automobile à domicile à Huy et alentours | LN AutoShine",
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
@@ -15,9 +15,11 @@ export const metadata: Metadata = {
   creator: siteName,
   publisher: siteName,
   keywords: [
-    "detailing automobile Liège",
-    "nettoyage voiture à domicile Amay",
+    "detailing automobile Huy",
+    "nettoyage voiture à domicile Huy",
     "lavage voiture à domicile Huy",
+    "nettoyage voiture à domicile Amay",
+    "lavage voiture à domicile Wanze",
     "nettoyage intérieur voiture",
     "detailing auto Belgique",
     "LN AutoShine",
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Detailing automobile à domicile à Liège, Huy et Amay",
+    title: "Detailing automobile à domicile à Huy et alentours",
     description: siteDescription,
     url: "/",
     siteName,
@@ -41,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Detailing automobile à domicile à Liège, Huy et Amay",
+    title: "Detailing automobile à domicile à Huy et alentours",
     description: siteDescription,
     images: ["/images/pexels-lynxexotics.jpg"],
   },

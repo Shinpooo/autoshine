@@ -111,6 +111,7 @@ const packOptions = [
 
 const bookingSteps = ["Véhicule", "Créneau", "Contact", "Validation"];
 const whatsappPhone = "32493084331";
+const serviceZoneLabel = "15 km autour de Huy";
 
 function createWhatsAppUrl(message: string) {
   return `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
@@ -388,7 +389,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
   const outOfZoneWhatsAppUrl = createWhatsAppUrl(
     [
       "Bonjour LN AutoShine,",
-      "Mon adresse semble être hors zone dans le formulaire de réservation.",
+      `Mon adresse semble être hors zone (${serviceZoneLabel}) dans le formulaire de réservation.`,
       selectedAddress ? `Adresse: ${selectedAddress.label}` : "",
       selectedAddress ? `Distance estimée: ${selectedAddress.distanceKm} km` : "",
       form.vehicleModel.trim() ? `Véhicule: ${form.vehicleModel.trim()}` : "",
@@ -651,6 +652,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
 
               <label>
                 Adresse de la prestation
+                <small>Zone desservie: {serviceZoneLabel}</small>
                 <div className="booking-address-wrap">
                   <div className="booking-address-input">
                     <span className="booking-address-icon" aria-hidden />
@@ -708,7 +710,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                             >
                               {item.inZone
                                 ? `${item.distanceKm} km`
-                                : `Hors zone - ${item.distanceKm} km`}
+                                : `Hors zone 15 km - ${item.distanceKm} km`}
                             </small>
                           </button>
                         ))}
@@ -751,10 +753,10 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                   }`}
                 >
                   {selectedAddress.inZone
-                    ? `Adresse dans la zone (${selectedAddress.distanceKm} km).`
+                    ? `Adresse dans la zone de ${serviceZoneLabel} (${selectedAddress.distanceKm} km).`
                     : (
                       <>
-                        Adresse hors zone ({selectedAddress.distanceKm} km).{" "}
+                        Adresse hors zone de {serviceZoneLabel} ({selectedAddress.distanceKm} km).{" "}
                         <a
                           href={outOfZoneWhatsAppUrl}
                           target="_blank"

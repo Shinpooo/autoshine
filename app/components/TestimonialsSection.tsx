@@ -1,47 +1,138 @@
+import Image from "next/image";
 import type { CSSProperties } from "react";
 
-const testimonials = [
+type TestimonialImage = {
+  src: string;
+  alt: string;
+};
+
+type Testimonial = {
+  quote: string;
+  name: string;
+  images?: TestimonialImage[];
+  imageCount?: number;
+};
+
+const googleReviewSummary = {
+  rating: "5,0",
+  stars: "★★★★★",
+  reviewCount: 12,
+};
+
+const testimonials: Testimonial[] = [
   {
-    quote: "Intérieur impeccable, plus aucune poussière. Service au top.",
-    name: "Julie M.",
+    quote:
+      "Très bon boulot,(4heures sur une beetle cabriolet) personne consciencieuse et bonne conseillère. Je recommande.",
+    name: "Antonio Calabrese",
   },
   {
-    quote: "Pack Premium idéal avant une revente. Résultat bluffant.",
-    name: "Marc D.",
+    quote:
+      "J'ai découvert le travail de LN AutoShine sur les réseaux sociaux et la qualité de leurs services m'a vraiment impressionné. Ma voiture avait besoin d'être nettoyée avant d'être rendue à son propriétaire. Je referai appel à eux sans hésiter. Service rapide, abordable et de grande qualité.",
+    name: "nate williams",
   },
   {
-    quote: "Travail minutieux, ponctuel, très pro. Je recommande.",
-    name: "Sarah L.",
+    quote:
+      "J'ai fait appel à LN AutoShine et je suis vraiment satisfait du résultat. J'ai eu plus que ce que je voulais, je ne peux que recommander",
+    name: "Youssef Ouazzani",
   },
   {
-    quote: "Voiture comme neuve. Finitions parfaites.",
-    name: "Thomas R.",
+    quote: "Un pro passionné n'hésitez pas a faire appel a ses services",
+    name: "didier barbe",
   },
   {
-    quote: "Travail ultra soigné. Le résultat est net et durable.",
-    name: "Nadia K.",
+    quote: "Service impeccable . Merci et à bientôt .",
+    name: "ASBL Animal Sans Logis",
   },
   {
-    quote: "Service ponctuel, véhicule transformé en une session.",
-    name: "Julien P.",
+    quote: "Très sympa et efficace un travail très bien fait",
+    name: "Antonino Castiglione",
+    images: [
+      {
+        src: "/images/reviews/antonino-castiglione-1.webp",
+        alt: "Photo de l'avis Google d'Antonino Castiglione",
+      },
+      {
+        src: "/images/reviews/antonino-castiglione-2.webp",
+        alt: "Photo de l'avis Google d'Antonino Castiglione",
+      },
+      {
+        src: "/images/reviews/antonino-castiglione-3.webp",
+        alt: "Photo de l'avis Google d'Antonino Castiglione",
+      },
+    ],
+    imageCount: 3,
   },
   {
-    quote: "Excellente prestation à domicile, très professionnel.",
-    name: "Sophie L.",
+    quote:
+      "Professionnels et flexibles sur les horaires de prestations. Font en sorte de trouver des compromis pour faciliter les prestations. Je suis très satisfait du nettoyage de mon VW Caddy et recommande grandement",
+    name: "Noa",
+    images: [
+      {
+        src: "/images/reviews/noa-1.webp",
+        alt: "Photo de l'avis Google de Noa",
+      },
+      {
+        src: "/images/reviews/noa-2.webp",
+        alt: "Photo de l'avis Google de Noa",
+      },
+      {
+        src: "/images/reviews/noa-3.webp",
+        alt: "Photo de l'avis Google de Noa",
+      },
+    ],
+    imageCount: 4,
   },
   {
-    quote: "Rapide, efficace, finition premium sur chaque détail.",
-    name: "Thomas R.",
-  },
-  {
-    quote: "Le meilleur rendu que j'ai eu sur ma voiture.",
-    name: "Marc D.",
-  },
-  {
-    quote: "Très satisfait, je reprendrai un créneau sans hésiter.",
-    name: "Sarah L.",
+    quote:
+      "Je recommande a 100% travail de qualite!!! Tres professionnel encore merci a vous 😊 Bonne route et a bientot😉",
+    name: "isabelle baccus",
+    images: [
+      {
+        src: "/images/reviews/isabelle-baccus-1.webp",
+        alt: "Photo de l'avis Google d'isabelle baccus",
+      },
+      {
+        src: "/images/reviews/isabelle-baccus-2.webp",
+        alt: "Photo de l'avis Google d'isabelle baccus",
+      },
+      {
+        src: "/images/reviews/isabelle-baccus-3.webp",
+        alt: "Photo de l'avis Google d'isabelle baccus",
+      },
+    ],
+    imageCount: 4,
   },
 ];
+
+function TestimonialPhotos({ item }: { item: Testimonial }) {
+  const images = item.images;
+
+  if (!images?.length) {
+    return null;
+  }
+
+  const extraCount = Math.max((item.imageCount ?? images.length) - images.length, 0);
+
+  return (
+    <div className="testimonial-photos" aria-label={`Photos de l'avis Google de ${item.name}`}>
+      {images.map((image, index) => (
+        <div className="testimonial-photo-wrap" key={image.src}>
+          <Image
+            src={image.src}
+            alt={image.alt}
+            width={160}
+            height={120}
+            sizes="(max-width: 768px) 26vw, 120px"
+            className="testimonial-photo"
+          />
+          {index === images.length - 1 && extraCount > 0 ? (
+            <span className="testimonial-photo-more">+{extraCount}</span>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function TestimonialsSection() {
   const columns = [
@@ -55,7 +146,17 @@ export default function TestimonialsSection() {
     <section className="section" id="temoignages">
       <div className="container">
         <p className="eyebrow">Ils nous font confiance</p>
-        <h2 className="section-title">Témoignages</h2>
+        <div className="testimonials-heading">
+          <h2 className="section-title">Avis Google</h2>
+          <div
+            className="google-rating-badge"
+            aria-label={`Note Google : ${googleReviewSummary.rating} sur 5, ${googleReviewSummary.reviewCount} avis`}
+          >
+            <strong>{googleReviewSummary.rating}</strong>
+            <span aria-hidden>{googleReviewSummary.stars}</span>
+            <small>{googleReviewSummary.reviewCount} avis</small>
+          </div>
+        </div>
         <p className="section-subtitle">
           Des retours clients authentiques sur la qualité des finitions.
         </p>
@@ -73,6 +174,7 @@ export default function TestimonialsSection() {
                   >
                     <div className="testimonial-rating">★★★★★</div>
                     <p>{item.quote}</p>
+                    <TestimonialPhotos item={item} />
                     <span>{item.name}</span>
                   </article>
                 ))}
@@ -95,6 +197,7 @@ export default function TestimonialsSection() {
                   >
                     <div className="testimonial-rating">★★★★★</div>
                     <p>{item.quote}</p>
+                    <TestimonialPhotos item={item} />
                     <span>{item.name}</span>
                   </article>
                 ))}

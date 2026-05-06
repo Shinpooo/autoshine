@@ -2,20 +2,17 @@
 
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Circle, useMap } from "react-leaflet";
-import { latLng } from "leaflet";
 
-const center: [number, number] = [50.5483, 5.3098];
-const radiusMeters = 20000;
+const center: [number, number] = [50.51888, 5.2408];
+const radiusMeters = 15000;
+const defaultZoom = 10.25;
 
-function FitCircleBounds() {
+function SetMapView() {
   const map = useMap();
 
   useEffect(() => {
-    const bounds = latLng(center[0], center[1]).toBounds(radiusMeters * 2);
-    map.fitBounds(bounds, { padding: [20, 20] });
-    map.once("moveend", () => {
-      map.setZoom(map.getZoom() + 1);
-    });
+    map.invalidateSize();
+    map.setView(center, defaultZoom, { animate: false });
   }, [map]);
 
   return null;
@@ -26,11 +23,13 @@ export default function ServiceMap() {
     <div className="map-shell">
       <MapContainer
         center={center}
-        zoom={10}
+        zoom={defaultZoom}
+        zoomSnap={0.25}
+        zoomDelta={0.25}
         scrollWheelZoom={false}
         className="map"
       >
-        <FitCircleBounds />
+        <SetMapView />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -38,10 +37,16 @@ export default function ServiceMap() {
         <Circle
           center={center}
           radius={radiusMeters}
-          pathOptions={{ color: "#747b86", fillColor: "#747b86", fillOpacity: 0.18 }}
+          pathOptions={{
+            color: "#ffffff",
+            fillColor: "#ffffff",
+            fillOpacity: 0.06,
+            opacity: 1,
+            weight: 5,
+          }}
         />
       </MapContainer>
-      <div className="map-label">Liège, Huy & alentours - rayon 20 km</div>
+      <div className="map-label">Huy & alentours - rayon 15 km</div>
     </div>
   );
 }

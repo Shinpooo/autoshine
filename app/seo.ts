@@ -3,9 +3,16 @@ export const siteUrl = "https://lnautoshine.be";
 export const siteName = "LN AutoShine";
 
 export const siteDescription =
-  "Detailing automobile premium à domicile autour d'Amay, Liège et Huy : lavage main, nettoyage intérieur et extérieur, shampoing sièges et finitions haut de gamme.";
+  "Detailing automobile premium à domicile dans un rayon de 15 km autour de Huy : lavage main, nettoyage intérieur et extérieur, shampoing sièges et finitions haut de gamme.";
 
-export const serviceAreas = ["Amay", "Liège", "Huy", "Engis", "Flémalle", "Seraing"];
+export const serviceAreas = [
+  "Huy",
+  "Wanze",
+  "Amay",
+  "Andenne",
+  "Engis",
+  "Villers-le-Bouillet",
+];
 
 export const businessJsonLd = {
   "@context": "https://schema.org",
@@ -24,7 +31,7 @@ export const businessJsonLd = {
   })),
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Amay",
+    addressLocality: "Huy",
     addressCountry: "BE",
   },
   sameAs: [
