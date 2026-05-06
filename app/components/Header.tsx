@@ -15,6 +15,7 @@ const navItems = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showHeaderCta, setShowHeaderCta] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -33,6 +34,35 @@ export default function Header() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [menuOpen]);
+
+  useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+
+    const frame = window.requestAnimationFrame(() => {
+      const heroCta = document.querySelector("[data-hero-booking-cta]");
+      if (!heroCta || !("IntersectionObserver" in window)) {
+        setShowHeaderCta(true);
+        return;
+      }
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setShowHeaderCta(!entry.isIntersecting);
+        },
+        {
+          rootMargin: "-96px 0px 0px 0px",
+          threshold: 0.1,
+        }
+      );
+
+      observer.observe(heroCta);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+    };
+  }, []);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -70,7 +100,13 @@ export default function Header() {
           <span />
           <span />
         </button>
-        <button className="btn" type="button" data-open-booking>
+        <button
+          className={`btn nav-booking-cta${showHeaderCta ? " is-visible" : ""}`}
+          type="button"
+          data-open-booking
+          tabIndex={showHeaderCta ? 0 : -1}
+          aria-hidden={!showHeaderCta}
+        >
           Voir les disponibilités
         </button>
       </div>

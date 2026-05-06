@@ -85,7 +85,7 @@ export default function Home() {
                 premium pour sublimer chaque détail de votre véhicule.
               </p>
               <div className="hero-actions">
-                <button className="btn" type="button" data-open-booking>
+                <button className="btn" type="button" data-open-booking data-hero-booking-cta>
                   Voir les disponibilités
                 </button>
                 <a className="btn btn-ghost" href="#avant-apres">
