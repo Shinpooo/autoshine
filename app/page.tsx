@@ -251,42 +251,51 @@ export default function Home() {
       </main>
 
       <footer className="footer">
-        <div className="container footer-grid">
-          <div>
-            <div className="brand footer-brand" aria-label="LN AutoShine">
-              <Image
-                className="brand-logo"
-                src="/images/logo-transparent.png"
-                alt="LN AutoShine"
-                width={2172}
-                height={724}
-                sizes="190px"
-              />
+        <div className="container footer-inner">
+          <div className="footer-main">
+            <div className="footer-brand-block">
+              <div className="footer-brand" aria-label="LN AutoShine">
+                <Image
+                  className="footer-logo"
+                  src="/images/logo-transparent.png"
+                  alt="LN AutoShine"
+                  width={2172}
+                  height={724}
+                  sizes="(max-width: 700px) 150px, 172px"
+                />
+              </div>
+              <p>
+                Detailing automobile haut de gamme à domicile, avec une finition
+                propre, durable et soignée.
+              </p>
             </div>
-            <small>Detailing automobile haut de gamme à domicile.</small>
-          </div>
-          <div>
-            <strong>Contact</strong>
-            <small>+32 493 08 43 31</small>
-            <small>lnautoshine@gmail.com</small>
-          </div>
-          <div>
-            <strong>Zone</strong>
-            <small>Entre Liège et Huy</small>
-            <small>Rayon de 20 km</small>
-          </div>
-          <div>
-            <strong>Réseaux</strong>
-            <small>
+
+            <div className="footer-column">
+              <strong>Contact</strong>
+              <a href="tel:+32493084331">+32 493 08 43 31</a>
+              <a href="mailto:lnautoshine@gmail.com">lnautoshine@gmail.com</a>
+            </div>
+
+            <div className="footer-column">
+              <strong>Zone</strong>
+              <span>Entre Liège et Huy</span>
+              <span>Rayon de 20 km autour d&apos;Amay</span>
+            </div>
+
+            <div className="footer-column">
+              <strong>Réseaux</strong>
               <a href="https://www.instagram.com/ln_autoshine/" target="_blank" rel="noreferrer">
                 Instagram
               </a>
-            </small>
-            <small>
               <a href="https://linktr.ee/lnautoshine" target="_blank" rel="noreferrer">
                 Linktree
               </a>
-            </small>
+            </div>
+          </div>
+
+          <div className="footer-bottom">
+            <small>© 2026 LN AutoShine</small>
+            <small>Nettoyage intérieur et extérieur à domicile</small>
           </div>
         </div>
       </footer>

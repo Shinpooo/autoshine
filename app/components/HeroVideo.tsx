@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const HERO_VIDEOS = [
   "/images/videobg.mp4",
@@ -11,9 +11,15 @@ const HERO_VIDEOS = [
 ];
 
 export default function HeroVideo() {
-  const [src] = useState(
-    () => HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)]
-  );
+  const [src, setSrc] = useState(HERO_VIDEOS[0]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setSrc(HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)]);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <video
