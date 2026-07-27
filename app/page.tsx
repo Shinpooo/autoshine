@@ -9,21 +9,10 @@ import MobileStickyCta from "./components/MobileStickyCta";
 import WhatsAppIcon from "./components/WhatsAppIcon";
 import { businessJsonLd } from "./seo";
 
+// The Google review data must be requested at runtime rather than frozen at build time.
+export const dynamic = "force-dynamic";
+
 const packs = [
-  {
-    name: "Pack Essentiel",
-    tagline: "Idéal pour un entretien régulier et un véhicule propre au quotidien.",
-    items: [
-      "Aspiration intérieure légère",
-      "Lavage extérieur complet à la main",
-      "Nettoyage des jantes et pneus",
-      "Séchage manuel",
-      "Vitres intérieures et extérieures",
-    ],
-    duration: "Durée indicative : 1h – 1h30",
-    note: "Recommandé pour un entretien mensuel ou bimensuel.",
-    image: "/images/detail-microfiber.jpg",
-  },
   {
     name: "Pack Confort",
     tagline: "Nettoyage complet pour retrouver un intérieur et un extérieur soignés.",
@@ -38,7 +27,8 @@ const packs = [
     ],
     duration: "Durée indicative : 2h – 2h30",
     note: "Le meilleur équilibre entre résultat et budget.",
-    image: "/images/interior-leather.jpg",
+    price: "À partir de 110 €",
+    image: "/images/detail-microfiber.jpg",
   },
   {
     name: "Pack Premium",
@@ -52,6 +42,24 @@ const packs = [
     ],
     duration: "Durée indicative : 3h – 4h",
     note: "Idéal avant une vente ou après une période sans entretien.",
+    price: "À partir de 165 €",
+    image: "/images/interior-leather.jpg",
+  },
+  {
+    name: "Pack Detailing",
+    tagline:
+      "Nettoyage intérieur en profondeur pour redonner à l'habitacle un aspect neuf.",
+    items: [
+      "Toutes les prestations du Pack Premium",
+      "Shampoing intégral sièges, tapis et coffre",
+      "Nettoyage détaillé des moindres recoins (aérations, contours, plastiques)",
+      "Traitement anti-odeurs",
+      "Protection cuir ou textile selon matière",
+    ],
+    duration: "Durée indicative : 4h – 6h",
+    note:
+      "Idéal pour un intérieur très sale, une remise à neuf avant vente, ou un entretien annuel poussé.",
+    price: "À partir de 299 €",
     image: "/images/pexels-fbo-media.jpg",
   },
 ];
@@ -102,7 +110,7 @@ export default function Home() {
                 </a>
               </div>
               <p className="cta-microcopy">
-                Réservation en 2 minutes · Zone 15 km autour de Huy
+                Réservation en 2 minutes · 20 km inclus autour de Huy
               </p>
             </div>
           </div>
@@ -117,7 +125,24 @@ export default function Home() {
                 Le résultat parle de lui-même. Faites glisser pour comparer.
               </p>
             </div>
-            <BeforeAfter />
+            <div className="ba-grid">
+              <article className="ba-case">
+                <p className="ba-case__title">BMW Série 3 Touring</p>
+                <BeforeAfter
+                  beforeSrc="/images/before-after-bmw-before.webp"
+                  afterSrc="/images/before-after-bmw-after.webp"
+                  vehicle="BMW Série 3 Touring"
+                />
+              </article>
+              <article className="ba-case">
+                <p className="ba-case__title">Porsche Macan</p>
+                <BeforeAfter
+                  beforeSrc="/images/before-after-porsche-before.webp"
+                  afterSrc="/images/before-after-porsche-after.webp"
+                  vehicle="Porsche Macan"
+                />
+              </article>
+            </div>
           </div>
         </section>
 
@@ -129,9 +154,9 @@ export default function Home() {
                 Detailing haut de gamme, finition irréprochable
               </h2>
               <p className="section-subtitle">
-                LN AutoShine se déplace à domicile dans un rayon de 15 km autour
-                de Huy pour nettoyer, protéger et valoriser votre véhicule avec
-                des produits professionnels et des méthodes maîtrisées.
+                LN AutoShine se déplace à domicile dans un rayon de 20 km autour
+                de Huy, puis sur confirmation avec supplément kilométrique, pour
+                nettoyer, protéger et valoriser votre véhicule.
               </p>
             </div>
             <div className="promise-media">
@@ -148,8 +173,8 @@ export default function Home() {
 
         <section className="section" id="packs">
           <div className="container">
-            <p className="eyebrow">Nos prestations</p>
-            <h2 className="section-title">Packs detailing</h2>
+            <p className="eyebrow">Nos Packs</p>
+            <h2 className="section-title">Nos Prestations</h2>
             <p className="section-subtitle">
               Trois niveaux d&apos;intervention pour répondre à chaque besoin :
               entretien régulier, nettoyage intérieur extérieur complet ou
@@ -177,6 +202,7 @@ export default function Home() {
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
+                    <div className="pack-price">{pack.price}</div>
                     <div className="pack-meta">{pack.duration}</div>
                     <div className="pack-meta">{pack.note}</div>
                     <button
@@ -191,6 +217,36 @@ export default function Home() {
                 </article>
               ))}
             </div>
+            <p className="packs-pricing-note">
+              Tarifs TTC selon le gabarit du véhicule. Le prix de base exact
+              s&apos;affiche pendant la réservation.
+            </p>
+            <details className="pricing-extras">
+              <summary>Voir les options et suppléments</summary>
+              <div className="pricing-extras-grid">
+                <div>
+                  <h3>Options ciblées</h3>
+                  <ul>
+                    <li>Shampoing ciblé, en complément du Pack Confort : 25 € / siège</li>
+                    <li>Traitement du cuir, lorsqu&apos;il n&apos;est pas inclus : à partir de 30 €</li>
+                    <li>Restauration des plastiques extérieurs : à partir de 30 €</li>
+                    <li>Décontamination carrosserie à la barre d&apos;argile : à partir de 40 €</li>
+                    <li>Vapeur de la zone de chargement : 20 à 35 €</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>État et déplacement</h3>
+                  <ul>
+                    <li>Poils d&apos;animaux : 15 à 25 €, estimés sur photos</li>
+                    <li>Véhicule très sale : estimation préalable sur photos</li>
+                    <li>20 km inclus autour de Huy, puis 1 € / km supplémentaire</li>
+                  </ul>
+                  <p>
+                    Tout supplément est annoncé et accepté avant l&apos;intervention.
+                  </p>
+                </div>
+              </div>
+            </details>
           </div>
         </section>
 
@@ -242,7 +298,8 @@ export default function Home() {
             <p className="eyebrow">Zone d&apos;intervention</p>
             <h2 className="section-title">Huy & alentours</h2>
             <p className="section-subtitle zone-subtitle-one-line">
-              Zone de 15 km autour de Huy : Wanze, Amay, Andenne, Engis et Villers-le-Bouillet.
+              20 km inclus autour de Huy : Wanze, Amay, Andenne, Engis et Villers-le-Bouillet.
+              Au-delà, comptez 1 € par kilomètre supplémentaire après confirmation.
             </p>
             <div style={{ height: 20 }} />
             <ServiceMapClient />
@@ -273,13 +330,13 @@ export default function Home() {
             <div className="footer-column">
               <strong>Contact</strong>
               <a href="tel:+32493084331">+32 493 08 43 31</a>
-              <a href="mailto:lnautoshine@gmail.com">lnautoshine@gmail.com</a>
+              <a href="mailto:contact@lnautoshine.be">contact@lnautoshine.be</a>
             </div>
 
             <div className="footer-column">
               <strong>Zone</strong>
               <span>Huy et alentours</span>
-              <span>Rayon de 15 km autour de Huy</span>
+              <span>20 km inclus autour de Huy</span>
             </div>
 
             <div className="footer-column">

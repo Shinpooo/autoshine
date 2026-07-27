@@ -3,16 +3,28 @@
 import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import Image from "next/image";
 
-export default function BeforeAfter() {
+type BeforeAfterProps = {
+  beforeSrc: string;
+  afterSrc: string;
+  vehicle: string;
+};
+
+export default function BeforeAfter({
+  beforeSrc,
+  afterSrc,
+  vehicle,
+}: BeforeAfterProps) {
   const [position, setPosition] = useState(33);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const ctaRevealed = position >= 72;
+  const ctaRevealed = position >= 63;
   const updatePositionFromPointer = (clientX: number) => {
     const container = containerRef.current;
     if (!container) return;
 
     const rect = container.getBoundingClientRect();
     const nextPosition = ((clientX - rect.left) / rect.width) * 100;
+    setHasInteracted(true);
     setPosition(Math.min(100, Math.max(0, Math.round(nextPosition))));
   };
 
@@ -48,8 +60,8 @@ export default function BeforeAfter() {
     >
       <div className="ba-image">
         <Image
-          src="/images/after-clean-v3.png"
-          alt="Après detailing"
+          src={afterSrc}
+          alt={`${vehicle} après detailing`}
           fill
           draggable={false}
           sizes="(max-width: 900px) 90vw, 1200px"
@@ -58,8 +70,8 @@ export default function BeforeAfter() {
       </div>
       <div className="ba-image ba-after">
         <Image
-          src="/images/before-clean-v3.png"
-          alt="Avant detailing"
+          src={beforeSrc}
+          alt={`${vehicle} avant detailing`}
           fill
           draggable={false}
           sizes="(max-width: 900px) 90vw, 1200px"
@@ -73,24 +85,37 @@ export default function BeforeAfter() {
           <span />
         </span>
       </div>
+      <div
+        className={`ba-drag-hint${hasInteracted ? " is-hidden" : ""}`}
+        aria-hidden="true"
+      >
+        Glissez pour révéler <span>→</span>
+      </div>
       <input
         className="ba-range"
         type="range"
         min={0}
         max={100}
         value={position}
-        onInput={(event) => setPosition(Number(event.currentTarget.value))}
-        onChange={(event) => setPosition(Number(event.target.value))}
-        aria-label="Comparer avant et après"
+        onInput={(event) => {
+          setHasInteracted(true);
+          setPosition(Number(event.currentTarget.value));
+        }}
+        onChange={(event) => {
+          setHasInteracted(true);
+          setPosition(Number(event.target.value));
+        }}
+        aria-label={`Comparer ${vehicle} avant et après`}
       />
       <div className={`ba-inline-cta${ctaRevealed ? " is-visible" : ""}`} aria-hidden={!ctaRevealed}>
+        <strong>Convaincu par le résultat ?</strong>
         <button
           className="btn ba-inline-cta__button"
           type="button"
           data-open-booking
           disabled={!ctaRevealed}
         >
-          Je veux ce résultat
+          Réserver ce résultat
         </button>
       </div>
     </div>

@@ -2,10 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import {
+  VEHICLE_CATEGORIES,
+  getPackPriceCents,
+  getStartingPriceCents,
+  getVehicleCategoryLabel,
+  type PackKey,
+  type VehicleCategoryKey,
+} from "@/app/lib/booking";
 
 type BookingForm = {
   pack: string;
   vehicleModel: string;
+  vehicleCategory: VehicleCategoryKey | "";
   firstName: string;
   lastName: string;
   phone: string;
@@ -50,6 +59,7 @@ type AvailabilityDay = {
 const initialForm: BookingForm = {
   pack: "",
   vehicleModel: "",
+  vehicleCategory: "",
   firstName: "",
   lastName: "",
   phone: "",
@@ -62,26 +72,17 @@ const initialForm: BookingForm = {
   notes: "",
 };
 
-const packOptions = [
-  {
-    name: "Pack Essentiel",
-    description: "Entretien régulier pour garder un véhicule propre au quotidien.",
-    duration: "1h - 1h30",
-    price: "65 €",
-    details: [
-      "Aspiration intérieure légère",
-      "Lavage extérieur complet à la main",
-      "Nettoyage des jantes et pneus",
-      "Séchage manuel",
-      "Vitres intérieures et extérieures",
-    ],
-    note: "Recommandé pour un entretien mensuel ou bimensuel.",
-  },
+const packOptions: Array<{
+  name: PackKey;
+  description: string;
+  duration: string;
+  details: string[];
+  note: string;
+}> = [
   {
     name: "Pack Confort",
     description: "Nettoyage complet intérieur/extérieur avec finitions soignées.",
     duration: "2h - 2h30",
-    price: "99 €",
     details: [
       "Aspiration intérieure complète",
       "Nettoyage des plastiques intérieurs",
@@ -97,7 +98,6 @@ const packOptions = [
     name: "Pack Premium",
     description: "Remise en état approfondie et finitions haut de gamme.",
     duration: "3h - 4h",
-    price: "145 €",
     details: [
       "Toutes les prestations du Pack Confort",
       "Shampoing des sièges et tapis",
@@ -107,11 +107,35 @@ const packOptions = [
     ],
     note: "Idéal avant une vente ou après une période sans entretien.",
   },
+  {
+    name: "Pack Detailing",
+    description:
+      "Nettoyage intérieur en profondeur pour redonner à l'habitacle un aspect neuf.",
+    duration: "4h - 6h",
+    details: [
+      "Toutes les prestations du Pack Premium",
+      "Shampoing intégral sièges, tapis et coffre",
+      "Nettoyage détaillé des moindres recoins (aérations, contours, plastiques)",
+      "Traitement anti-odeurs",
+      "Protection cuir ou textile selon matière",
+    ],
+    note:
+      "Idéal pour un intérieur très sale, une remise à neuf avant vente, ou un entretien annuel poussé.",
+  },
 ];
 
 const bookingSteps = ["Véhicule", "Créneau", "Contact", "Validation"];
 const whatsappPhone = "32493084331";
-const serviceZoneLabel = "15 km autour de Huy";
+const serviceZoneLabel = "20 km autour de Huy";
+
+function formatPrice(cents: number | null) {
+  if (cents === null) return "—";
+  return new Intl.NumberFormat("fr-BE", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
 
 function createWhatsAppUrl(message: string) {
   return `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
@@ -142,6 +166,13 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
   const addressInputRef = useRef<HTMLInputElement | null>(null);
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
   const isSelectedAddressInZone = Boolean(selectedAddress?.inZone);
+  const selectedPackPriceCents = getPackPriceCents(
+    form.pack,
+    form.vehicleCategory,
+  );
+  const selectedVehicleCategoryLabel = getVehicleCategoryLabel(
+    form.vehicleCategory,
+  );
 
   const sanitizePhone = (value: string) => {
     const stripped = value.replace(/[^\d+]/g, "");
@@ -218,7 +249,13 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
   }, [isOpen, standalone]);
 
   const canGoNext = useMemo(() => {
-    if (step === 0) return Boolean(form.pack && form.vehicleModel.trim());
+    if (step === 0) {
+      return Boolean(
+        form.pack &&
+          form.vehicleModel.trim() &&
+          form.vehicleCategory,
+      );
+    }
     if (step === 1) return Boolean(form.date && form.timeSlot);
     if (step === 2) {
       return Boolean(
@@ -381,6 +418,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
       "Bonjour LN AutoShine,",
       "J'aimerais avoir un conseil pour choisir le pack le plus adapté à mon véhicule.",
       form.vehicleModel.trim() ? `Véhicule: ${form.vehicleModel.trim()}` : "",
+      form.vehicleCategory ? `Gabarit: ${selectedVehicleCategoryLabel}` : "",
       form.pack ? `Pack envisagé: ${form.pack}` : "",
     ]
       .filter(Boolean)
@@ -392,7 +430,11 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
       `Mon adresse semble être hors zone (${serviceZoneLabel}) dans le formulaire de réservation.`,
       selectedAddress ? `Adresse: ${selectedAddress.label}` : "",
       selectedAddress ? `Distance estimée: ${selectedAddress.distanceKm} km` : "",
+      selectedAddress
+        ? `Supplément indicatif: 1 €/km au-delà de 20 km, à confirmer.`
+        : "",
       form.vehicleModel.trim() ? `Véhicule: ${form.vehicleModel.trim()}` : "",
+      form.vehicleCategory ? `Gabarit: ${selectedVehicleCategoryLabel}` : "",
       form.pack ? `Pack souhaité: ${form.pack}` : "",
       "Pouvez-vous me confirmer si une intervention est possible ?",
     ]
@@ -518,12 +560,46 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                 />
               </label>
 
+              <label>
+                Gabarit du véhicule
+                <span className="booking-select-shell">
+                  <select
+                    className="booking-select"
+                    value={form.vehicleCategory}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        vehicleCategory: event.target.value as VehicleCategoryKey | "",
+                        date: "",
+                        timeSlot: "",
+                        timeSlotLabel: "",
+                      }))
+                    }
+                  >
+                    <option value="">Sélectionnez un gabarit</option>
+                    {VEHICLE_CATEGORIES.map((category) => (
+                      <option key={category.key} value={category.key}>
+                        {category.label} — {category.examples}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="booking-select-chevron" aria-hidden>
+                    <svg viewBox="0 0 12 8" fill="none">
+                      <path d="M1 1.5 6 6.5l5-5" />
+                    </svg>
+                  </span>
+                </span>
+              </label>
+
               <div className="booking-pack-group">
                 <span>Choix du pack</span>
                 <div className="booking-pack-grid">
                   {packOptions.map((pack) => {
                     const isSelected = form.pack === pack.name;
                     const isExpanded = expandedPack === pack.name;
+                    const priceCents = form.vehicleCategory
+                      ? getPackPriceCents(pack.name, form.vehicleCategory)
+                      : getStartingPriceCents(pack.name);
                     return (
                       <div
                         key={pack.name}
@@ -548,7 +624,10 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                         >
                           <strong>{pack.name}</strong>
                           <p>{pack.description}</p>
-                          <small>Prix: {pack.price}</small>
+                          <small>
+                            {form.vehicleCategory ? "Prix de base" : "À partir de"} :{" "}
+                            {formatPrice(priceCents)}
+                          </small>
                           <small>Durée: {pack.duration}</small>
                         </button>
 
@@ -585,6 +664,11 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                     );
                   })}
                 </div>
+                <p className="booking-price-note">
+                  Tarif TTC selon le gabarit. Les éventuels suppléments liés à
+                  l&apos;état du véhicule sont annoncés et acceptés avant
+                  l&apos;intervention.
+                </p>
                 <p className="booking-pack-help">
                   Vous avez un doute ?{" "}
                   <a
@@ -710,7 +794,7 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                             >
                               {item.inZone
                                 ? `${item.distanceKm} km`
-                                : `Hors zone 15 km - ${item.distanceKm} km`}
+                                : `Au-delà des 20 km inclus - ${item.distanceKm} km`}
                             </small>
                           </button>
                         ))}
@@ -756,7 +840,9 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                     ? `Adresse dans la zone de ${serviceZoneLabel} (${selectedAddress.distanceKm} km).`
                     : (
                       <>
-                        Adresse hors zone de {serviceZoneLabel} ({selectedAddress.distanceKm} km).{" "}
+                        Adresse au-delà des {serviceZoneLabel} inclus (
+                        {selectedAddress.distanceKm} km). Supplément de 1 €/km,{" "}
+                        intervention à confirmer.{" "}
                         <a
                           href={outOfZoneWhatsAppUrl}
                           target="_blank"
@@ -877,6 +963,13 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
                 <strong>Véhicule:</strong> {form.vehicleModel}
               </p>
               <p>
+                <strong>Gabarit:</strong> {selectedVehicleCategoryLabel}
+              </p>
+              <p>
+                <strong>Tarif de base TTC:</strong>{" "}
+                {formatPrice(selectedPackPriceCents)}
+              </p>
+              <p>
                 <strong>Client:</strong> {form.firstName} {form.lastName}
               </p>
               <p>
@@ -893,6 +986,10 @@ export default function BookingDrawer({ standalone = false }: BookingDrawerProps
               </p>
               <p>
                 <strong>Créneau:</strong> {summarySlotLabel}
+              </p>
+              <p className="booking-price-note">
+                Les options ou suppléments éventuels sont confirmés avec vous
+                avant l&apos;intervention.
               </p>
               {bookingError && <p className="booking-success">{bookingError}</p>}
               {bookingSuccess && <p className="booking-success">{bookingSuccess}</p>}

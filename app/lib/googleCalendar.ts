@@ -15,6 +15,8 @@ export type CalendarBookingEventInput = {
   stripeSessionId: string;
   pack: string;
   vehicleModel: string;
+  vehicleCategoryLabel?: string;
+  basePriceCents?: number;
   phone: string;
   address: string;
   houseNumber: string;
@@ -86,10 +88,16 @@ export async function createBookingEventInGoogleCalendar(
   const descriptionLines = [
     `Pack: ${input.pack}`,
     `Vehicule: ${input.vehicleModel}`,
+    input.vehicleCategoryLabel
+      ? `Gabarit: ${input.vehicleCategoryLabel}`
+      : null,
+    Number.isFinite(input.basePriceCents)
+      ? `Tarif de base TTC: ${((input.basePriceCents || 0) / 100).toFixed(0)} €`
+      : null,
     `Telephone: ${input.phone}`,
     `Adresse: ${input.address} ${input.houseNumber}`,
     `Stripe session: ${input.stripeSessionId}`,
-  ];
+  ].filter((line): line is string => Boolean(line));
 
   if (input.customerEmail) {
     descriptionLines.push(`Email client: ${input.customerEmail}`);

@@ -24,6 +24,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     stripeSessionId: session.id,
     pack: metadata.pack || "Pack",
     vehicleModel: metadata.vehicleModel || "Vehicule",
+    vehicleCategoryLabel: metadata.vehicleCategoryLabel || "",
+    basePriceCents: Number(metadata.totalPriceCents || "0"),
     phone: metadata.phone || "",
     address: metadata.address || "",
     houseNumber: metadata.houseNumber || "",

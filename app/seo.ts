@@ -3,7 +3,7 @@ export const siteUrl = "https://lnautoshine.be";
 export const siteName = "LN AutoShine";
 
 export const siteDescription =
-  "Detailing automobile premium à domicile dans un rayon de 15 km autour de Huy : lavage main, nettoyage intérieur et extérieur, shampoing sièges et finitions haut de gamme.";
+  "Detailing automobile premium à domicile dans un rayon de 20 km autour de Huy : lavage main, nettoyage intérieur et extérieur, shampoing sièges et finitions haut de gamme.";
 
 export const serviceAreas = [
   "Huy",
@@ -23,7 +23,7 @@ export const businessJsonLd = {
   image: `${siteUrl}/images/pexels-lynxexotics.jpg`,
   description: siteDescription,
   telephone: "+32493084331",
-  email: "lnautoshine@gmail.com",
+  email: "contact@lnautoshine.be",
   priceRange: "€€",
   areaServed: serviceAreas.map((area) => ({
     "@type": "City",
@@ -41,18 +41,8 @@ export const businessJsonLd = {
   makesOffer: [
     {
       "@type": "Offer",
-      name: "Pack Essentiel",
-      price: "65",
-      priceCurrency: "EUR",
-      itemOffered: {
-        "@type": "Service",
-        name: "Nettoyage voiture à domicile",
-      },
-    },
-    {
-      "@type": "Offer",
       name: "Pack Confort",
-      price: "99",
+      price: "110",
       priceCurrency: "EUR",
       itemOffered: {
         "@type": "Service",
@@ -62,11 +52,21 @@ export const businessJsonLd = {
     {
       "@type": "Offer",
       name: "Pack Premium",
-      price: "145",
+      price: "165",
       priceCurrency: "EUR",
       itemOffered: {
         "@type": "Service",
         name: "Detailing automobile premium",
+      },
+    },
+    {
+      "@type": "Offer",
+      name: "Pack Detailing",
+      price: "299",
+      priceCurrency: "EUR",
+      itemOffered: {
+        "@type": "Service",
+        name: "Nettoyage intérieur automobile en profondeur",
       },
     },
   ],

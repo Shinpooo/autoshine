@@ -1,4 +1,10 @@
-import { getPackConfig, isBookablePack } from "@/app/lib/booking";
+import {
+  getPackConfig,
+  getPackPriceCents,
+  getVehicleCategoryLabel,
+  isBookablePack,
+  isVehicleCategoryKey,
+} from "@/app/lib/booking";
 import { getGoogleAccessToken, loadGoogleCredentials } from "@/app/lib/googleAuth";
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
@@ -10,6 +16,7 @@ const TRANSIT_BUFFER_MINUTES = 60;
 type ReservePayload = {
   pack: string;
   vehicleModel: string;
+  vehicleCategory: string;
   firstName: string;
   lastName: string;
   phone: string;
@@ -43,6 +50,8 @@ async function sendReservationEmail(args: {
   to: string;
   pack: string;
   vehicleModel: string;
+  vehicleCategoryLabel: string;
+  basePriceCents: number;
   firstName: string;
   lastName: string;
   phone: string;
@@ -70,6 +79,11 @@ async function sendReservationEmail(args: {
       .replace(/;/g, "\\;");
 
   const dateText = formatDateTime(new Date(args.startIso));
+  const basePrice = new Intl.NumberFormat("fr-BE", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(args.basePriceCents / 100);
   const notesLine = args.notes?.trim()
     ? `<p><strong>Informations complémentaires :</strong> ${args.notes.trim()}</p>`
     : "";
@@ -100,9 +114,12 @@ async function sendReservationEmail(args: {
       <p><strong>Date et heure :</strong> ${dateText}</p>
       <p><strong>Pack :</strong> ${args.pack}</p>
       <p><strong>Véhicule :</strong> ${args.vehicleModel}</p>
+      <p><strong>Gabarit :</strong> ${args.vehicleCategoryLabel}</p>
+      <p><strong>Tarif de base TTC :</strong> ${basePrice}</p>
       <p><strong>Adresse :</strong> ${args.address} ${args.houseNumber}</p>
       <p><strong>Téléphone :</strong> ${args.phone}</p>
       ${notesLine}
+      <p>Les éventuels suppléments sont annoncés et acceptés avant l'intervention.</p>
       <p>Un fichier calendrier (.ics) est joint à cet email.</p>
     </div>
   `;
@@ -122,7 +139,7 @@ async function sendReservationEmail(args: {
       bcc: fromEmail,
       subject: "LN AutoShine - Confirmation de votre demande",
       html,
-      text: `Réservation reçue.\nDate: ${dateText}\nPack: ${args.pack}\nVéhicule: ${args.vehicleModel}\nAdresse: ${args.address} ${args.houseNumber}`,
+      text: `Réservation reçue.\nDate: ${dateText}\nPack: ${args.pack}\nVéhicule: ${args.vehicleModel}\nGabarit: ${args.vehicleCategoryLabel}\nTarif de base TTC: ${basePrice}\nAdresse: ${args.address} ${args.houseNumber}`,
       attachments: [
         {
           filename: "reservation-lnautoshine.ics",
@@ -193,6 +210,7 @@ export async function POST(request: Request) {
     if (
       !required(body.pack) ||
       !required(body.vehicleModel) ||
+      !required(body.vehicleCategory) ||
       !required(body.firstName) ||
       !required(body.lastName) ||
       !required(body.phone) ||
@@ -207,6 +225,9 @@ export async function POST(request: Request) {
     if (!isBookablePack(body.pack)) {
       return NextResponse.json({ error: "Pack indisponible à la réservation." }, { status: 400 });
     }
+    if (!isVehicleCategoryKey(body.vehicleCategory)) {
+      return NextResponse.json({ error: "Gabarit de véhicule invalide." }, { status: 400 });
+    }
 
     const start = new Date(body.timeSlot);
     if (!Number.isFinite(start.getTime()) || start <= new Date()) {
@@ -214,6 +235,11 @@ export async function POST(request: Request) {
     }
 
     const durationMinutes = getPackConfig(body.pack).durationMinutes;
+    const basePriceCents = getPackPriceCents(body.pack, body.vehicleCategory);
+    if (basePriceCents === null) {
+      return NextResponse.json({ error: "Tarif indisponible." }, { status: 400 });
+    }
+    const vehicleCategoryLabel = getVehicleCategoryLabel(body.vehicleCategory);
     const end = addMinutes(start, durationMinutes);
 
     const credentials = await loadGoogleCredentials();
@@ -258,6 +284,8 @@ export async function POST(request: Request) {
           description: [
             `Pack: ${body.pack}`,
             `Véhicule: ${body.vehicleModel}`,
+            `Gabarit: ${vehicleCategoryLabel}`,
+            `Tarif de base TTC: ${(basePriceCents / 100).toFixed(0)} €`,
             `Client: ${body.firstName} ${body.lastName}`,
             `Téléphone: ${body.phone}`,
             `Email: ${body.email}`,
@@ -300,6 +328,8 @@ export async function POST(request: Request) {
       to: body.email,
       pack: body.pack,
       vehicleModel: body.vehicleModel,
+      vehicleCategoryLabel,
+      basePriceCents,
       firstName: body.firstName,
       lastName: body.lastName,
       phone: body.phone,

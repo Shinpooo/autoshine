@@ -6,7 +6,19 @@ Create a local `.env.local` file with the required private keys:
 
 ```bash
 GEOAPIFY_API_KEY=your_geoapify_api_key
+GOOGLE_BUSINESS_ACCOUNT_ID=your_business_profile_account_id
+GOOGLE_BUSINESS_LOCATION_ID=your_business_profile_location_id
+GOOGLE_BUSINESS_OAUTH_CLIENT_ID=your_oauth_client_id
+GOOGLE_BUSINESS_OAUTH_CLIENT_SECRET=your_oauth_client_secret
+GOOGLE_BUSINESS_OAUTH_REFRESH_TOKEN=your_owner_refresh_token
+GOOGLE_BUSINESS_PROFILE_URL=your_public_google_business_profile_url
 ```
+
+The project uses the **Google Business Profile API** to retrieve up to 50 reviews
+owned by the business, ordered by most recently updated. The Google Cloud project
+must be approved for Business Profile API access, and the OAuth refresh token
+must belong to an owner or manager of the verified profile. Until these values
+are configured, the homepage keeps displaying the existing review selection.
 
 First, run the development server:
 

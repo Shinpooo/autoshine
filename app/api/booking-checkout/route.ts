@@ -1,9 +1,18 @@
-import { centsToEuros, computeDepositCents, getPackConfig } from "@/app/lib/booking";
+import {
+  centsToEuros,
+  computeDepositCents,
+  getPackConfig,
+  getPackPriceCents,
+  getVehicleCategoryLabel,
+  isBookablePack,
+  isVehicleCategoryKey,
+} from "@/app/lib/booking";
 import Stripe from "stripe";
 
 type CheckoutPayload = {
   pack: string;
   vehicleModel: string;
+  vehicleCategory: string;
   phone: string;
   address: string;
   houseNumber: string;
@@ -41,6 +50,7 @@ export async function POST(request: Request) {
     if (
       !required(body.pack) ||
       !required(body.vehicleModel) ||
+      !required(body.vehicleCategory) ||
       !required(body.phone) ||
       !required(body.address) ||
       !required(body.houseNumber) ||
@@ -48,10 +58,18 @@ export async function POST(request: Request) {
     ) {
       return Response.json({ error: "Formulaire incomplet." }, { status: 400 });
     }
+    if (!isBookablePack(body.pack) || !isVehicleCategoryKey(body.vehicleCategory)) {
+      return Response.json({ error: "Pack ou gabarit invalide." }, { status: 400 });
+    }
 
     const stripe = new Stripe(secret);
     const packConfig = getPackConfig(body.pack);
-    const depositCents = computeDepositCents(packConfig.totalPriceCents);
+    const totalPriceCents = getPackPriceCents(body.pack, body.vehicleCategory);
+    if (totalPriceCents === null) {
+      return Response.json({ error: "Tarif indisponible." }, { status: 400 });
+    }
+    const vehicleCategoryLabel = getVehicleCategoryLabel(body.vehicleCategory);
+    const depositCents = computeDepositCents(totalPriceCents);
     const origin = resolveOrigin(request);
 
     const session = await stripe.checkout.sessions.create({
@@ -64,7 +82,9 @@ export async function POST(request: Request) {
             currency: "eur",
             product_data: {
               name: `Acompte 20% - ${body.pack}`,
-              description: `${body.vehicleModel} | ${body.timeSlotLabel || body.timeSlot}`,
+              description: `${body.vehicleModel} (${vehicleCategoryLabel}) | ${
+                body.timeSlotLabel || body.timeSlot
+              }`,
             },
             unit_amount: depositCents,
           },
@@ -75,6 +95,9 @@ export async function POST(request: Request) {
       metadata: {
         pack: body.pack,
         vehicleModel: body.vehicleModel,
+        vehicleCategory: body.vehicleCategory,
+        vehicleCategoryLabel,
+        totalPriceCents: String(totalPriceCents),
         phone: body.phone,
         address: body.address,
         houseNumber: body.houseNumber,
