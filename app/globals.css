@@ -1401,24 +1401,280 @@ body.booking-open {
   margin: 0;
 }
 
-.ba-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 48px;
-}
-
-.ba-case {
+.ba-carousel {
   min-width: 0;
-  display: grid;
-  gap: 12px;
+  position: relative;
+  isolation: isolate;
 }
 
-.ba-case__title {
-  color: rgba(255, 255, 255, 0.72);
+.ba-carousel__viewport {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(230, 225, 216, 0.14);
+  background: #060606;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.42);
+}
+
+.ba-carousel__caption {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 20;
+  min-width: 210px;
+  display: grid;
+  gap: 5px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  animation: baCaptionEnter 0.42s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+.ba-carousel__caption span {
+  color: #a9ad66;
   font-family: var(--font-action);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.ba-carousel__caption strong {
+  font-family: var(--font-display);
+  font-size: 0.93rem;
+  font-weight: 500;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.ba-carousel__slide {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ba-carousel__slide.is-active {
+  position: relative;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ba-carousel__slide.is-active.is-next {
+  animation: baCarouselEnterNext 0.55s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+.ba-carousel__slide.is-active.is-previous {
+  animation: baCarouselEnterPrevious 0.55s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+.ba-carousel .ba {
+  aspect-ratio: 16 / 10;
+  border: 0;
+  box-shadow: none;
+}
+
+.ba-carousel__dock {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0 0;
+}
+
+.ba-carousel__counter {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.38);
+  font-family: var(--font-action);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.ba-carousel__counter strong {
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.ba-carousel__progress {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ba-carousel__progress-tab {
+  min-width: 48px;
+  height: 44px;
+  flex: 0 1 120px;
+  display: grid;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ba-carousel__progress-tab span {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transform-origin: left;
+  transition:
+    height 0.22s ease,
+    background 0.22s ease,
+    transform 0.32s cubic-bezier(0.2, 0.85, 0.2, 1);
+}
+
+.ba-carousel__progress-tab span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.ba-carousel__progress-tab:hover span,
+.ba-carousel__progress-tab:focus-visible span {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.ba-carousel__progress-tab.is-active span {
+  height: 3px;
+}
+
+.ba-carousel__progress-tab.is-active span::after {
+  animation: baCarouselProgress 10s linear forwards;
+}
+
+.ba-carousel__progress-tab.is-active.is-paused span::after {
+  animation-play-state: paused;
+}
+
+.ba-carousel__navigation {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ba-carousel__arrow {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(230, 225, 216, 0.18);
+  background: rgba(255, 255, 255, 0.025);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ba-carousel__arrow:hover,
+.ba-carousel__arrow:focus-visible {
+  border-color: rgba(255, 255, 255, 0.62);
+  background: #ffffff;
+  color: #050505;
+  transform: translateY(-1px);
+}
+
+.ba-carousel__arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1.6;
+}
+
+@media (min-width: 601px) {
+  .ba-carousel__dock {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 30;
+    min-height: 0;
+    gap: 12px;
+    padding: 8px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(12px);
+  }
+
+  .ba-carousel__progress {
+    flex: 0 0 112px;
+  }
+
+  .ba-carousel__progress-tab {
+    min-width: 42px;
+    height: 40px;
+  }
+
+  .ba-carousel__arrow {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@keyframes baCarouselEnterNext {
+  from {
+    opacity: 0.35;
+    clip-path: inset(0 0 0 7%);
+    transform: scale(1.012);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes baCarouselEnterPrevious {
+  from {
+    opacity: 0.35;
+    clip-path: inset(0 7% 0 0);
+    transform: scale(1.012);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes baCaptionEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes baCarouselProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .ba {
@@ -2132,19 +2388,22 @@ body.booking-open {
   }
 
   .ba-drag-hint span,
+  .ba-carousel__caption,
+  .ba-carousel__slide.is-active,
   .ba-inline-cta.is-visible,
   .ba-inline-cta.is-visible .ba-inline-cta__button::before {
     animation: none;
+  }
+
+  .ba-carousel__progress-tab.is-active span::after {
+    animation: none;
+    transform: scaleX(1);
   }
 }
 
 @media (max-width: 900px) {
   .page {
     padding-bottom: 86px;
-  }
-
-  .ba-grid {
-    gap: 32px;
   }
 
   .pack-body > div:first-child,
@@ -2388,6 +2647,42 @@ body.booking-open {
 
   .hide-mobile {
     display: none;
+  }
+
+  .ba-carousel__caption {
+    top: 10px;
+    left: 10px;
+    min-width: 0;
+    gap: 3px;
+    padding: 9px 10px;
+  }
+
+  .ba-carousel__caption span {
+    font-size: 0.52rem;
+  }
+
+  .ba-carousel__caption strong {
+    font-size: 0.72rem;
+  }
+
+  .ba-carousel__dock {
+    min-height: 56px;
+    gap: 12px;
+    padding-top: 8px;
+  }
+
+  .ba-carousel__progress {
+    gap: 6px;
+  }
+
+  .ba-carousel__progress-tab {
+    min-width: 36px;
+    height: 42px;
+  }
+
+  .ba-carousel__arrow {
+    width: 42px;
+    height: 42px;
   }
 
   .ba-drag-hint {

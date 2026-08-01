@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Header from "./components/Header";
 import ServiceMapClient from "./components/ServiceMapClient";
-import BeforeAfter from "./components/BeforeAfter";
+import BeforeAfterCarousel from "./components/BeforeAfterCarousel";
 import TestimonialsSection from "./components/TestimonialsSection";
 import BookingDrawer from "./components/BookingDrawer";
 import HeroVideo from "./components/HeroVideo";
@@ -125,24 +125,7 @@ export default function Home() {
                 Le résultat parle de lui-même. Faites glisser pour comparer.
               </p>
             </div>
-            <div className="ba-grid">
-              <article className="ba-case">
-                <p className="ba-case__title">BMW Série 3 Touring</p>
-                <BeforeAfter
-                  beforeSrc="/images/before-after-bmw-before.webp"
-                  afterSrc="/images/before-after-bmw-after.webp"
-                  vehicle="BMW Série 3 Touring"
-                />
-              </article>
-              <article className="ba-case">
-                <p className="ba-case__title">Porsche Macan</p>
-                <BeforeAfter
-                  beforeSrc="/images/before-after-porsche-before.webp"
-                  afterSrc="/images/before-after-porsche-after.webp"
-                  vehicle="Porsche Macan"
-                />
-              </article>
-            </div>
+            <BeforeAfterCarousel />
           </div>
         </section>
 
